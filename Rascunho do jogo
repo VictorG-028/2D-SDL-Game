@@ -1,0 +1,163 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <SDL.h>
+
+// Função que inicialia APENAS as função de video do SDL
+bool init_video()
+{
+	bool sucess = true; // Variável que será retornada. Continuará true se nada der errado
+
+	if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
+	{
+		printf("Erro de inicialização! > SDL_INIT_VIDEO <  SDL error: %s\n", SDL_GetError() );
+		sucess = false;
+	}
+
+	return sucess;
+}
+
+
+// Função que carrega imagem em variáveis SDL_surface e gera um erro caso isso não seja possivel
+// Essa função ainda não foi usada, mas pode ser caso necessário
+SDL_Surface* load_surface(const char* nome_do_arquivo)
+{
+	//Load surface
+	SDL_Surface* LoadedSurface = SDL_LoadBMP(nome_do_arquivo);
+
+	if ( LoadedSurface == NULL )
+	{
+		printf("Erro ao carregar a imagem! \n Imagem: %s \n	SDL_GetError: %s", nome_do_arquivo, SDL_GetError() );
+	}
+
+	return LoadedSurface;
+}
+
+
+int main(int argc, char* argv[])
+{
+	// y62Kqx <- Alguma informação do professor que eu ñ lembro o que era
+
+	// Inicializa o SDL_VIDEO (Permite utilizar funções de imagem)
+	init_video();
+	
+	// Criação da janela(windown) principal
+	//                                    Título       Ponto incial x          Ponto inicial y    Largura   Altura       FLAG
+	SDL_Window* janela = SDL_CreateWindow("Jogo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800,     600, SDL_WINDOW_RESIZABLE);
+	SDL_Surface* Interface_Principal = SDL_GetWindowSurface(janela);
+
+	// =-= =-= =-= =-= =-=   Variáveis   =-= =-= =-= =-= //
+
+	bool game_loop = true; // Variável que so fica falsa quando um evento finalizar o jogo
+	int sprite = 1; // Variável do número do sprite(desenho) do detetive que vai ser mostrado
+
+	SDL_Event event; // Variável que vai conter os eventos(inputs) do usuário
+
+	enum Key_Press
+	{
+		KEY_PRESS_DEFAULT, // 0
+		KEY_PRESS_UP,      // 1
+		KEY_PRESS_LEFT,    // 2
+		KEY_PRESSS_DOWN,   // 3
+		KEY_PRESS_RIGHT,   // 4
+		KEY_PRESS_TOTAL    // 5
+	};
+
+	SDL_Surface* Interface_BackGround = SDL_LoadBMP("Imagens/background.bmp"); // Variável que contem a imagem do fundo (background)
+
+	SDL_Surface* Interface_Detetive = NULL; // Variável do tipo SDL_Surface pointer que contem o sprite do detetive
+	
+	// =-= =-= =-= =-= =-=   Fim das Variáveis   =-= =-= =-= =-= //
+
+
+	// Preenchimento do background
+	SDL_BlitSurface(Interface_BackGround, NULL, Interface_Principal, NULL);
+
+	// Atualiza e mostra a janela
+	SDL_UpdateWindowSurface(janela);
+	SDL_ShowWindow(janela);
+
+	// Loop principal do jogo (Importante: apenas no inicio ele atualiza a janela)
+	while (game_loop)
+	{
+		SDL_UpdateWindowSurface(janela);
+
+		// Loop que trata os eventos
+		while (SDL_PollEvent( &event ) != 0) // enquanto existir evento o loop continua
+		{
+			// Evento: fechar janela
+			if ( event.type == SDL_QUIT )
+			{
+				game_loop = false;
+			}
+			// Evento: Pressionar uma tecla qualquer no teclado
+			else if ( event.type == SDL_KEYDOWN )
+			{
+				//Switch das teclas que fazem algo ao serem pressionadas
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_w:
+					// switch dos sprites (OBSERVAÇÃO: do jeito q ta tem 2 problemas)
+					// 1- A variável sprite não reseta pra 1 quando muda de direção
+					// 2- O movimento tera que ser sincronizado em 2 ou 4 tempos, ou seja, 1 passo no jogo tem q ter 2 ou 4 frames
+					// Já que existe esses problemas, eu resolvi colocar apenas esse switch de teste para a tecla w (1 das 4 direções)
+					switch (sprite)
+					{
+					case 1:
+						Interface_Detetive = SDL_LoadBMP("Imagens/detetive costa 1.bmp");
+
+						sprite += 1;
+						break;
+
+					case 2:
+						Interface_Detetive = SDL_LoadBMP("Imagens/detetive costa 2.bmp");
+
+						sprite += 1;
+						break;
+					case 3:
+						Interface_Detetive = SDL_LoadBMP("Imagens/detetive costa 3.bmp");
+
+						sprite += 1;
+						break;
+					case 4:
+						Interface_Detetive = SDL_LoadBMP("Imagens/detetive costa 4.bmp");
+
+						sprite = 1;
+						break;
+					}
+					break;
+
+				case SDLK_a:
+					Interface_Detetive = SDL_LoadBMP("Imagens/detetive lado direito 1.bmp");
+
+					break;
+
+				case SDLK_s:
+					Interface_Detetive = SDL_LoadBMP("Imagens/detetive frente 1.bmp");
+
+					break;
+
+				case SDLK_d:
+					Interface_Detetive = SDL_LoadBMP("Imagens/detetive lado direito 1.bmp"); // Está imagem ainda não está invertida
+
+					break;
+
+				}// Fim do switch das teclas
+				
+			}// Fim dos evento de teclado
+
+		}// Fim do loop de tratamento de eventos
+
+
+		SDL_BlitSurface(Interface_Detetive, NULL, Interface_Principal, NULL); // Coloca a imagem do detetive na janela
+	
+
+	} // Fim do while(game_loop)
+
+
+	// Finalização do SDL
+	SDL_DestroyWindow(janela); // Tira a janela da MEM
+	SDL_Quit(); // Fecha o SDL	
+
+
+	return 0;
+} // Fim do Main
