@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <SDL.h>
 
-// Função que inicialia APENAS as função de video do SDL
+// Função que inicialia APENAS as funções de video do SDL
 bool init_video()
 {
 	bool sucess = true; // Variável que será retornada. Continuará true se nada der errado
@@ -17,16 +17,28 @@ bool init_video()
 }
 
 
-// Função que carrega imagem em variáveis SDL_surface e gera um erro caso isso não seja possivel
-// Essa função ainda não foi usada, mas pode ser caso necessário
-SDL_Surface* load_surface(const char* nome_do_arquivo)
+// Função que carrega e otimiza um bitmap em variáveis do tipo SDL_surface
+SDL_Surface* load_surface(const char* path_do_arquivo, SDL_Surface* surface_principal)
 {
-	//Load surface
-	SDL_Surface* LoadedSurface = SDL_LoadBMP(nome_do_arquivo);
+	SDL_Surface* OptimizedSurface = NULL;
 
-	if ( LoadedSurface == NULL )
+	SDL_Surface* LoadedSurface = SDL_LoadBMP(path_do_arquivo); // Load surface
+
+	if (LoadedSurface == NULL) // Se NULL, então não ocorreu o load surface
 	{
-		printf("Erro ao carregar a imagem! \n Imagem: %s \n	SDL_GetError: %s", nome_do_arquivo, SDL_GetError() );
+		printf("Erro ao carregar a imagem! \n Imagem: %s \n	SDL_GetError: %s", path_do_arquivo, SDL_GetError());
+	}
+	else
+	{
+		// Convert surface to screen format
+		 OptimizedSurface = SDL_ConvertSurface(LoadedSurface, surface_principal->format, 0); // Converte a surface de 24bit para 32bit
+
+		 if (OptimizedSurface == NULL) // Se NULL, então não ocorreu o convert surface
+		 {
+			 printf("Erro ao otimizar imagem! zn Imagem: %s \n SDL_GetError: %s", path_do_arquivo, SDL_GetError());
+		 }
+		 
+		 SDL_FreeSurface(LoadedSurface); // Libera da memória a LoadedSurface
 	}
 
 	return LoadedSurface;
@@ -40,12 +52,17 @@ int main(int argc, char* argv[])
 	// Inicializa o SDL_VIDEO (Permite utilizar funções de imagem)
 	init_video();
 	
-	// Criação da janela(windown) principal
-	//                                    Título       Ponto incial x          Ponto inicial y    Largura   Altura       FLAG
-	SDL_Window* janela = SDL_CreateWindow("Jogo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800,     600, SDL_WINDOW_RESIZABLE);
-	SDL_Surface* Interface_Principal = SDL_GetWindowSurface(janela);
 
 	// =-= =-= =-= =-= =-=   Variáveis   =-= =-= =-= =-= //
+
+	int JANELA_WIDTH = 800;  // 1536 | 1920
+	int JANELA_HEIGHT = 600; // 864 | 1080
+
+	// Criação da janela(windown) principal
+	//                                    Título       Ponto incial x          Ponto inicial y         Largura       Altura              FLAG
+	SDL_Window* janela = SDL_CreateWindow("Jogo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, JANELA_WIDTH, JANELA_HEIGHT, SDL_WINDOW_SHOWN);
+	SDL_Surface* Interface_Principal = SDL_GetWindowSurface(janela);
+
 
 	bool game_loop = true; // Variável que so fica falsa quando um evento finalizar o jogo
 	int sprite = 1; // Variável do número do sprite(desenho) do detetive que vai ser mostrado
@@ -63,14 +80,31 @@ int main(int argc, char* argv[])
 	};
 
 	SDL_Surface* Interface_BackGround = SDL_LoadBMP("Imagens/background.bmp"); // Variável que contem a imagem do fundo (background)
+	//SDL_Surface* Interface_BackGround = load_surface("Imagens/background.bmp", Interface_Principal); // Variável que contem a imagem do fundo (background)
 
 	SDL_Surface* Interface_Detetive = NULL; // Variável do tipo SDL_Surface pointer que contem o sprite do detetive
 	
+	// =-= Retângulos das interfaces =-= //
+
+	SDL_Rect rect_principal; // Retângulo da interface principal
+	rect_principal.x = 0;
+	rect_principal.y = 0;
+	rect_principal.w = JANELA_WIDTH;
+	rect_principal.h = JANELA_HEIGHT;
+
+	SDL_Rect rect_detetive;
+	rect_detetive.x = (JANELA_WIDTH / 2  -  96 / 2);
+	rect_detetive.y = (JANELA_HEIGHT / 2  -  96 / 2);
+	rect_detetive.w = 96;
+	rect_detetive.h = 96;
+
+	// =-= Fim dos retângulos =-= //
+
+
 	// =-= =-= =-= =-= =-=   Fim das Variáveis   =-= =-= =-= =-= //
 
-
 	// Preenchimento do background
-	SDL_BlitSurface(Interface_BackGround, NULL, Interface_Principal, NULL);
+	SDL_BlitScaled(Interface_BackGround, NULL, Interface_Principal, &rect_principal);
 
 	// Atualiza e mostra a janela
 	SDL_UpdateWindowSurface(janela);
@@ -141,6 +175,12 @@ int main(int argc, char* argv[])
 
 					break;
 
+				case SDLK_ESCAPE:
+					// Códico que faz aparecer menu ao apertar ESC
+					game_loop = false;
+
+					break;
+
 				}// Fim do switch das teclas
 				
 			}// Fim dos evento de teclado
@@ -148,7 +188,7 @@ int main(int argc, char* argv[])
 		}// Fim do loop de tratamento de eventos
 
 
-		SDL_BlitSurface(Interface_Detetive, NULL, Interface_Principal, NULL); // Coloca a imagem do detetive na janela
+		SDL_BlitScaled(Interface_Detetive, NULL, Interface_Principal, &rect_detetive); // Coloca a imagem do detetive na janela
 	
 
 	} // Fim do while(game_loop)
@@ -161,3 +201,5 @@ int main(int argc, char* argv[])
 
 	return 0;
 } // Fim do Main
+
+
