@@ -1,5 +1,5 @@
 # Jogo-de-IP1
-Jogo da disciplina de Introdução a programação I.
+Projeto da disciplina de Introdução a programação I.
 
 ---
 
@@ -11,5 +11,4 @@ Jogo da disciplina de Introdução a programação I.
 
 ---
 
-Jogo em desenvolvimento.
-Link com os requisitos do jogo: https://github.com/VictorG-028/Jogo-de-IP1/issues/2
+Link dos requisitos do jogo: https://github.com/VictorG-028/Jogo-de-IP1/issues/2
