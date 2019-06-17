@@ -1,47 +1,58 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <SDL.h>
+#include <SDL_image.h>
 
 // Função que inicialia APENAS as funções de video do SDL
-bool init_video()
+bool init()
 {
-	bool sucess = true; // Variável que será retornada. Continuará true se nada der errado
+	bool success = true; // Variável que será retornada. Continuará true se nada der errado
 
-	if ( SDL_Init(SDL_INIT_VIDEO) < 0 )
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		printf("Erro de inicialização! > SDL_INIT_VIDEO <  SDL error: %s\n", SDL_GetError() );
-		sucess = false;
+		printf("Erro de inicialização do SDL_INIT_VIDEO! SDL error: %s\n", SDL_GetError() );
+		success = false;
+	}
+	else
+	{
+		int imgFlags = IMG_INIT_PNG;
+		if ( !( IMG_Init(imgFlags) & imgFlags) )
+		{
+			printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+			success = false;
+		}
 	}
 
-	return sucess;
+	return success;
 }
 
 
 // Função que carrega e otimiza um bitmap em variáveis do tipo SDL_surface
-SDL_Surface* load_surface(const char* path_do_arquivo, SDL_Surface* surface_principal)
+SDL_Surface* load_image(const char* image_Path, SDL_Surface* main_Surface)
 {
-	SDL_Surface* OptimizedSurface = NULL;
+	SDL_Surface* loaded_Surface = NULL;
+	SDL_Surface* optimized_Surface = NULL;
 
-	SDL_Surface* LoadedSurface = SDL_LoadBMP(path_do_arquivo); // Load surface
+	//loaded_Surface = SDL_LoadBMP(image_Path);
+	loaded_Surface = IMG_Load(image_Path);
 
-	if (LoadedSurface == NULL) // Se NULL, então não ocorreu o load surface
+	if (loaded_Surface == NULL) // Se NULL, então não ocorreu o load surface
 	{
-		printf("Erro ao carregar a imagem! \n Imagem: %s \n	SDL_GetError: %s", path_do_arquivo, SDL_GetError());
+		printf("Erro ao carregar a imagem! \n Imagem: %s \n	SDL_GetError: %s", image_Path, SDL_GetError());
 	}
 	else
 	{
-		// Convert surface to screen format
-		 OptimizedSurface = SDL_ConvertSurface(LoadedSurface, surface_principal->format, 0); // Converte a surface de 24bit para 32bit
+		optimized_Surface = SDL_ConvertSurface(loaded_Surface, main_Surface->format, 0); // Converte a surface de 24bit para 32bit
 
-		 if (OptimizedSurface == NULL) // Se NULL, então não ocorreu o convert surface
-		 {
-			 printf("Erro ao otimizar imagem! zn Imagem: %s \n SDL_GetError: %s", path_do_arquivo, SDL_GetError());
-		 }
-		 
-		 SDL_FreeSurface(LoadedSurface); // Libera da memória a LoadedSurface
+		if (optimized_Surface == NULL) // Se NULL, então não ocorreu o convert surface
+		{
+			printf("Erro ao otimizar imagem! \n Imagem: %s \n SDL_GetError: %s", image_Path, SDL_GetError());
+		}
+
+		SDL_FreeSurface(loaded_Surface); // Libera da memória a LoadedSurface
 	}
-
-	return LoadedSurface;
+	return optimized_Surface;
 }
 
 
@@ -49,25 +60,51 @@ int main(int argc, char* argv[])
 {
 	// y62Kqx <- Alguma informação do professor que eu ñ lembro o que era
 
-	// Inicializa o SDL_VIDEO (Permite utilizar funções de imagem)
-	init_video();
-	
+	init(); // Inicializa o SDL_VIDEO (Permite utilizar funções de imagem) e IMG
 
-	// =-= =-= =-= =-= =-=   Variáveis   =-= =-= =-= =-= //
 
-	int JANELA_WIDTH = 800;  // 1536 | 1920
-	int JANELA_HEIGHT = 600; // 864 | 1080
+	//  =-= =-= =-= =-= =-=   Variáveis   =-= =-= =-= =-=  //
 
-	// Criação da janela(windown) principal
-	//                                    Título       Ponto incial x          Ponto inicial y         Largura       Altura              FLAG
-	SDL_Window* janela = SDL_CreateWindow("Jogo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, JANELA_WIDTH, JANELA_HEIGHT, SDL_WINDOW_SHOWN);
-	SDL_Surface* Interface_Principal = SDL_GetWindowSurface(janela);
+	//  =-= Variáveis de configuração =-=  //
 
+	int window_Width = 800;  // 1536x864 ou 1920x1080
+	int window_Height = 600;
+
+	int detetive_Width = 96 * 1;
+	int detetive_Height = 96 * 1;
 
 	bool game_loop = true; // Variável que so fica falsa quando um evento finalizar o jogo
-	int sprite = 1; // Variável do número do sprite(desenho) do detetive que vai ser mostrado
+	int sprite = 1; // Número do sprite do detetive que vai ser mostrado
 
-	SDL_Event event; // Variável que vai conter os eventos(inputs) do usuário
+	SDL_Event event; // Variável que vai conter eventos (qualquer input) do usuário
+	
+	//  =-=   Fim das variáveis de configuração   =-=  //
+	//  =-------------------------------------------=  //
+	//  =-=   Variáveis SDL_Surface e SDL_Rect   =-=   //
+	
+	// Criação da janela (main_Window) junto com sua surface (main_Surface) e retângulo(main_Rect)
+	//                                    Título       Ponto incial x          Ponto inicial y         Largura       Altura              FLAG
+	SDL_Window* main_Window = SDL_CreateWindow("Jogo", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_Width, window_Height, SDL_WINDOW_SHOWN);
+	SDL_Surface* main_Surface = SDL_GetWindowSurface(main_Window);
+	SDL_Rect main_Rect;
+	main_Rect.x = 0;
+	main_Rect.y = 0;
+	main_Rect.w = window_Width;
+	main_Rect.h = window_Height;
+
+
+	SDL_Surface* background_Surface = NULL; // Contem a imagem do background.bmp
+	SDL_Rect background_Rect;
+	background_Rect = main_Rect;
+
+
+	SDL_Surface* detetive_Surface = NULL; // Contem os sprites do detetive
+	SDL_Rect detetive_Rect;
+	detetive_Rect.x = (window_Width / 2) - (detetive_Width / 2);
+	detetive_Rect.y = (window_Height / 2) - (detetive_Height / 2);
+	detetive_Rect.w = detetive_Width;
+	detetive_Rect.h = detetive_Height;
+
 
 	enum Key_Press
 	{
@@ -79,46 +116,27 @@ int main(int argc, char* argv[])
 		KEY_PRESS_TOTAL    // 5
 	};
 
-	SDL_Surface* Interface_BackGround = SDL_LoadBMP("Imagens/background.bmp"); // Variável que contem a imagem do fundo (background)
-	//SDL_Surface* Interface_BackGround = load_surface("Imagens/background.bmp", Interface_Principal); // Variável que contem a imagem do fundo (background)
+	//  =-= =-= =-=   Fim das Variáveis   =-= =-= =-=  //
+	//  =------------------------------------------=  //
+	//  =-= =-= =-=   Começo do códico   =-= =-= =-=  //
 
-	SDL_Surface* Interface_Detetive = NULL; // Variável do tipo SDL_Surface pointer que contem o sprite do detetive
-	
-	// =-= Retângulos das interfaces =-= //
+	// Preenchimento e blit do background
+	SDL_Surface* Interface_BackGround = load_image("Imagens/background.bmp", main_Surface);
+	SDL_BlitScaled(Interface_BackGround, NULL, main_Surface, &main_Rect);
 
-	SDL_Rect rect_principal; // Retângulo da interface principal
-	rect_principal.x = 0;
-	rect_principal.y = 0;
-	rect_principal.w = JANELA_WIDTH;
-	rect_principal.h = JANELA_HEIGHT;
+	// Atualiza e mostra a main_Window
+	SDL_UpdateWindowSurface(main_Window);
+	SDL_ShowWindow(main_Window);
 
-	SDL_Rect rect_detetive;
-	rect_detetive.x = (JANELA_WIDTH / 2  -  96 / 2);
-	rect_detetive.y = (JANELA_HEIGHT / 2  -  96 / 2);
-	rect_detetive.w = 96;
-	rect_detetive.h = 96;
-
-	// =-= Fim dos retângulos =-= //
-
-
-	// =-= =-= =-= =-= =-=   Fim das Variáveis   =-= =-= =-= =-= //
-
-	// Preenchimento do background
-	SDL_BlitScaled(Interface_BackGround, NULL, Interface_Principal, &rect_principal);
-
-	// Atualiza e mostra a janela
-	SDL_UpdateWindowSurface(janela);
-	SDL_ShowWindow(janela);
-
-	// Loop principal do jogo (Importante: apenas no inicio ele atualiza a janela)
+	// Loop principal do jogo (Importante: apenas no inicio ele atualiza a main_Window)
 	while (game_loop)
 	{
-		SDL_UpdateWindowSurface(janela);
+		SDL_UpdateWindowSurface(main_Window);
 
 		// Loop que trata os eventos
 		while (SDL_PollEvent( &event ) != 0) // enquanto existir evento o loop continua
 		{
-			// Evento: fechar janela
+			// Evento: fechar main_Window
 			if ( event.type == SDL_QUIT )
 			{
 				game_loop = false;
@@ -132,70 +150,151 @@ int main(int argc, char* argv[])
 				case SDLK_w:
 					// switch dos sprites (OBSERVAÇÃO: do jeito q ta tem 2 problemas)
 					// 1- A variável sprite não reseta pra 1 quando muda de direção
-					// 2- O movimento tera que ser sincronizado em 2 ou 4 tempos, ou seja, 1 passo no jogo tem q ter 2 ou 4 frames
-					// Já que existe esses problemas, eu resolvi colocar apenas esse switch de teste para a tecla w (1 das 4 direções)
+					// 2- O movimento tera que ser sincronizado em 2 frames, ou seja, 1 passo no jogo tem q ter 2 frames
 					switch (sprite)
 					{
 					case 1:
-						Interface_Detetive = SDL_LoadBMP("Imagens/detetive costa 1.bmp");
+						detetive_Surface = load_image("Imagens/detetive costa 1.bmp", main_Surface);
 
 						sprite += 1;
 						break;
 
 					case 2:
-						Interface_Detetive = SDL_LoadBMP("Imagens/detetive costa 2.bmp");
+						detetive_Surface = load_image("Imagens/detetive costa 2.bmp", main_Surface);
 
 						sprite += 1;
 						break;
 					case 3:
-						Interface_Detetive = SDL_LoadBMP("Imagens/detetive costa 3.bmp");
+						detetive_Surface = load_image("Imagens/detetive costa 3.bmp", main_Surface);
 
 						sprite += 1;
 						break;
 					case 4:
-						Interface_Detetive = SDL_LoadBMP("Imagens/detetive costa 4.bmp");
+						detetive_Surface = load_image("Imagens/detetive costa 4.bmp", main_Surface);
 
 						sprite = 1;
 						break;
-					}
+					}// Fim do switch da tecla SDLK_w
+
+					detetive_Rect.y -= detetive_Height;
+
 					break;
 
 				case SDLK_a:
-					Interface_Detetive = SDL_LoadBMP("Imagens/detetive lado direito 1.bmp");
+					switch (sprite)
+					{
+					case 1:
+						detetive_Surface = load_image("Imagens/detetive lado esquerdo 1.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+
+					case 2:
+						detetive_Surface = load_image("Imagens/detetive lado esquerdo 2.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+					case 3:
+						detetive_Surface = load_image("Imagens/detetive lado esquerdo 3.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+					case 4:
+						detetive_Surface = load_image("Imagens/detetive lado esquerdo 4.bmp", main_Surface);
+
+						sprite = 1;
+						break;
+					}// Fim do switch da tecla SDLK_a
+
+					detetive_Rect.x -= detetive_Width;
 
 					break;
 
 				case SDLK_s:
-					Interface_Detetive = SDL_LoadBMP("Imagens/detetive frente 1.bmp");
+					switch (sprite)
+					{
+					case 1:
+						detetive_Surface = load_image("Imagens/detetive frente 1.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+
+					case 2:
+						detetive_Surface = load_image("Imagens/detetive frente 2.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+					case 3:
+						detetive_Surface = load_image("Imagens/detetive frente 3.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+					case 4:
+						detetive_Surface = load_image("Imagens/detetive frente 4.bmp", main_Surface);
+
+						sprite = 1;
+						break;
+					}// Fim do switch da tecla SDLK_s
+
+					detetive_Rect.y += detetive_Height;
 
 					break;
 
 				case SDLK_d:
-					Interface_Detetive = SDL_LoadBMP("Imagens/detetive lado direito 1.bmp"); // Está imagem ainda não está invertida
+					switch (sprite)
+					{
+					case 1:
+						detetive_Surface = load_image("Imagens/detetive lado direito 1.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+
+					case 2:
+						detetive_Surface = load_image("Imagens/detetive lado direito 2.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+					case 3:
+						detetive_Surface = load_image("Imagens/detetive lado direito 3.bmp", main_Surface);
+
+						sprite += 1;
+						break;
+					case 4:
+						detetive_Surface = load_image("Imagens/detetive lado direito 4.bmp", main_Surface);
+
+						sprite = 1;
+						break;
+					} // Fim do switch da tecla SDLK_d
+
+					detetive_Rect.x += detetive_Width;
 
 					break;
 
 				case SDLK_ESCAPE:
-					// Códico que faz aparecer menu ao apertar ESC
-					game_loop = false;
+ 					game_loop = false;
 
 					break;
 
-				}// Fim do switch das teclas
+				case SDLK_e:
+					// Códico do bloco de notas aki
+
+					break;
+
+				} // Fim do switch das teclas
 				
-			}// Fim dos evento de teclado
+			} // Fim dos evento de teclado
 
-		}// Fim do loop de tratamento de eventos
+		} // Fim do loop de tratamento de eventos
 
-
-		SDL_BlitScaled(Interface_Detetive, NULL, Interface_Principal, &rect_detetive); // Coloca a imagem do detetive na janela
+		SDL_BlitScaled(Interface_BackGround, NULL, main_Surface, &main_Rect); // Recoloca o background para retirar a imagem do detetive
+		SDL_BlitScaled(detetive_Surface, NULL, main_Surface, &detetive_Rect); // Coloca a imagem do detetive na main_Window
 	
 
 	} // Fim do while(game_loop)
 
 
 	// Finalização do SDL
-	SDL_DestroyWindow(janela); // Tira a janela da MEM
+	SDL_DestroyWindow(main_Window); // Tira a main_Window da memória
 	SDL_Quit(); // Fecha o SDL	
 
 
