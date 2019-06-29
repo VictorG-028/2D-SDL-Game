@@ -11,3 +11,11 @@ Projeto da disciplina de Introdução a programação I.
 ---
 
 Link dos requisitos do jogo: https://github.com/VictorG-028/Jogo-de-IP1/issues/2
+
+---
+
+- Dowloads das bibliotecas:
+    - SDL.h -> http://libsdl.org/download-2.0.php
+    - SDL_image.h -> https://www.libsdl.org/projects/SDL_image/
+    - SDL_ttf.h -> https://www.libsdl.org/projects/SDL_ttf/
+    - SDL_mixer.h -> https://www.libsdl.org/projects/SDL_mixer/
