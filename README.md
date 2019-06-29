@@ -4,10 +4,9 @@ Projeto da disciplina de Introdução a programação I.
 ---
 
 - Linguagem do jogo: C
-- Compilador utilizado: ???
 - IDE: Visual Studio
-- Bibliotecas C utilizadas: SDL (docs do SDL: https://wiki.libsdl.org/APIByCategory)
-- Tutorial de SDL voltado para jogos: https://wiki.libsdl.org/APIByCategory
+- Bibliotecas C utilizadas: SDL.h, SDL_image.h, SDL_ttf.h, SDL_mixer.h (docs do SDL: https://wiki.libsdl.org/APIByCategory)
+- Tutorial de SDL voltado para jogos https://wiki.libsdl.org/APIByCategory
 
 ---
 
