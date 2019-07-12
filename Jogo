@@ -4,6 +4,8 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
+
 
 
 // Chama todas as funções init necessárias
@@ -22,6 +24,10 @@ void quit()
 }
 
 
+
+// ------------------------------------------------------------------------------------- //
+
+
 // Função que carrega uma surface e cria uma textura dessa surface
 SDL_Texture* load_texture(const char* image_Path, SDL_Renderer* window_Renderer)
 {
@@ -38,26 +44,315 @@ SDL_Texture* load_texture(const char* image_Path, SDL_Renderer* window_Renderer)
 }
 
 
-void settings()
+// Função que permite alterar as características de um retângulo
+void alterar_retangulo(SDL_Rect* rect, int x, int y, int w, int h)
 {
-	// (...) 
+	(*rect).x += x;
+	(*rect).y += y;
+	(*rect).w += w;
+	(*rect).h += h;
 }
 
 
-void menu(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load_game)
+// -------------------------------------------------------------------------------------- //
+
+
+void creditos(SDL_Renderer* window_Renderer)
+{
+	SDL_Event event;
+	bool creditos = true;
+
+	SDL_Texture* creditos_Texture = load_texture("imagens/creditos.png", window_Renderer);
+	SDL_RenderCopy(window_Renderer, creditos_Texture, NULL, NULL);
+
+	while (creditos)
+	{
+		SDL_RenderPresent(window_Renderer);
+
+		while (SDL_PollEvent(&event) != 0)
+		{
+			//Evento: Fechar janela | Evento: qualquer tecla pressionada | Evento: qualquer botçao do mause pressionado
+			if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				creditos = false;
+			}
+		} // Fim do loop de eventos
+	} // Fim do while(creditos)
+
+	// Finalização dos créditos
+	SDL_DestroyTexture(creditos_Texture);
+
+	creditos_Texture = NULL;
+
+} // Fim da função de créditos
+
+
+void controle(SDL_Renderer* window_Renderer)
+{
+	SDL_Event event;
+	bool controle = true;
+
+	SDL_Texture* controle_Texture = load_texture("imagens/controles.png", window_Renderer);
+	SDL_RenderCopy(window_Renderer, controle_Texture, NULL, NULL);
+
+	while (controle)
+	{
+		SDL_RenderPresent(window_Renderer);
+
+		while (SDL_PollEvent(&event) != 0)
+		{
+			//Evento: Fechar janela | Evento: qualquer tecla pressionada | Evento: qualquer botçao do mause pressionado
+			if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				controle = false;
+			}
+		} // Fim do loop de eventos
+	}// Fim do while(controle)
+
+	// Finalização dos créditos
+	SDL_DestroyTexture(controle_Texture);
+
+	controle_Texture = NULL;
+
+} // Fim da função de controle
+
+
+void settings(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, SDL_Texture* seta_Menu_Texture, SDL_Rect seta_Clip[], SDL_Texture* background_Texture, bool* som_Ligado)
+{
+	SDL_Texture* botoes_Texture = load_texture("imagens/botoes settings.png", window_Renderer);
+
+	SDL_Rect botoes_Apagados_Rect;
+	botoes_Apagados_Rect.x = (window_Surface->w) / 4;
+	botoes_Apagados_Rect.y = (window_Surface->h) / 2;
+	botoes_Apagados_Rect.w = 80 * 7;
+	botoes_Apagados_Rect.h = 48 * 7;
+
+	SDL_Rect botoes_Apagados_Clip;
+	botoes_Apagados_Clip.x = 0;
+	botoes_Apagados_Clip.y = 0;
+	botoes_Apagados_Clip.w = 80;
+	botoes_Apagados_Clip.h = 48;
+
+	SDL_Rect botao_Acesso_Rect;
+	botao_Acesso_Rect.x = (window_Surface->w) / 4;
+	botao_Acesso_Rect.y = (window_Surface->h) / 2;
+	botao_Acesso_Rect.w = 80 * 7;
+	botao_Acesso_Rect.h = 16 * 7;
+
+	SDL_Rect botao_Acesso_Clip;
+	botao_Acesso_Clip.x = 0;
+	botao_Acesso_Clip.y = 48;
+	botao_Acesso_Clip.w = 80;
+	botao_Acesso_Clip.h = 16;
+
+	// ------------------------------- //
+
+	SDL_Texture* botao_Voltar_Texture = load_texture("imagens/botao voltar.png", window_Renderer);
+
+	SDL_Rect botao_Voltar_Rect;
+	botao_Voltar_Rect.x = 0;
+	botao_Voltar_Rect.y = 0;
+	botao_Voltar_Rect.h = 16 * 5;
+	botao_Voltar_Rect.w = 48 * 5;
+
+	// ------------------------------- //
+
+	SDL_Rect seta_Rect;
+	seta_Rect.x = (window_Surface->w) / 4 - 16 * 5;
+	seta_Rect.y = (window_Surface->h) / 2;
+	seta_Rect.w = 16 * 5;
+	seta_Rect.h = 16 * 5;
+
+	// ------------------------------- //
+
+	// Descobre qual textura do som:ON/OFF deve aparecer
+	if (!(*som_Ligado))
+	{
+		alterar_retangulo(&botoes_Apagados_Clip, +(5 * 16), 0, 0, 0);
+		alterar_retangulo(&botao_Acesso_Clip, +(5 * 16), 0, 0, 0);
+	}
+
+	// ------------------------------- //
+
+	int seta_Posicao = 0;
+	int seta_Sprite = 1;
+
+	SDL_Event event;
+	bool settings = true;
+
+	while (settings)
+	{
+		SDL_RenderPresent(window_Renderer);
+
+		while (SDL_PollEvent(&event) != 0) // Enquanto existir evento o loop continua
+		{
+			// Evento: fechar main_Window
+			if (event.type == SDL_QUIT)
+			{
+				settings = false;
+			}
+			// Evento: tecla pressionada
+			else if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_DOWN:
+					if (seta_Posicao + 1 <= 2)
+					{
+						seta_Rect.y += 16 * 7;
+						seta_Posicao += 1;
+
+						alterar_retangulo(&botao_Acesso_Rect, 0, +(16 * 7), 0, 0);
+						alterar_retangulo(&botao_Acesso_Clip, 0, +(16), 0, 0);
+					}
+					break;
+
+				case SDLK_UP:
+					if (seta_Posicao - 1 >= 0)
+					{
+						seta_Rect.y -= 16 * 7;
+						seta_Posicao -= 1;
+
+						alterar_retangulo(&botao_Acesso_Rect, 0, -(16 * 7), 0, 0);
+						alterar_retangulo(&botao_Acesso_Clip, 0, -(16), 0, 0);
+					}
+					break;
+
+				case SDLK_s:
+					if (seta_Posicao + 1 <= 2)
+					{
+						seta_Rect.y += 120;
+						seta_Posicao += 1;
+
+						alterar_retangulo(&botao_Acesso_Rect, 0, +(16 * 7), 0, 0);
+						alterar_retangulo(&botao_Acesso_Clip, 0, +(16), 0, 0);
+					}
+					break;
+
+				case SDLK_w:
+					if (seta_Posicao - 1 >= 0)
+					{
+						seta_Rect.y -= 120;
+						seta_Posicao -= 1;
+
+						alterar_retangulo(&botao_Acesso_Rect, 0, -(16 * 7), 0, 0);
+						alterar_retangulo(&botao_Acesso_Clip, 0, -(16), 0, 0);
+					}
+					break;
+
+				case SDLK_KP_ENTER:
+					switch (seta_Posicao)
+					{
+					case 0:
+						if (*som_Ligado)
+						{
+							alterar_retangulo(&botoes_Apagados_Clip, +(5 * 16), 0, 0, 0);
+							alterar_retangulo(&botao_Acesso_Clip, +(5 * 16), 0, 0, 0);
+
+							(*som_Ligado) = false;
+						}
+						else
+						{
+							alterar_retangulo(&botoes_Apagados_Clip, -(5 * 16), 0, 0, 0);
+							alterar_retangulo(&botao_Acesso_Clip, -(5 * 16), 0, 0, 0);
+
+							(*som_Ligado) = true;
+						}
+
+						break;
+
+					case 1:
+						creditos(window_Renderer);
+						break;
+
+					case 2:
+						controle(window_Renderer);
+						break;
+					}
+
+					break;
+
+				case SDLK_SPACE:
+					switch (seta_Posicao)
+					{
+					case 0:
+						if (*som_Ligado)
+						{
+							alterar_retangulo(&botoes_Apagados_Clip, +(5 * 16), 0, 0, 0);
+							alterar_retangulo(&botao_Acesso_Clip, +(5 * 16), 0, 0, 0);
+
+							(*som_Ligado) = false;
+						}
+						else
+						{
+							alterar_retangulo(&botoes_Apagados_Clip, -(5 * 16), 0, 0, 0);
+							alterar_retangulo(&botao_Acesso_Clip, -(5 * 16), 0, 0, 0);
+
+							(*som_Ligado) = true;
+						}
+						break;
+
+					case 1:
+						creditos(window_Renderer);
+						break;
+
+					case 2:
+						controle(window_Renderer);
+						break;
+					}
+
+					break;
+
+				case SDLK_ESCAPE:
+
+					settings = false;
+
+					break;
+				}
+			} // Fim do switch das teclas
+		} // Fim do loop de eventos
+
+		SDL_RenderCopy(window_Renderer, background_Texture, NULL, NULL);
+		SDL_RenderCopy(window_Renderer, botao_Voltar_Texture, NULL, &botao_Voltar_Rect);
+		SDL_RenderCopy(window_Renderer, botoes_Texture, &botoes_Apagados_Clip, &botoes_Apagados_Rect);
+		SDL_RenderCopy(window_Renderer, botoes_Texture, &botao_Acesso_Clip, &botao_Acesso_Rect);
+		SDL_RenderCopy(window_Renderer, seta_Menu_Texture, &seta_Clip[seta_Sprite / 32], &seta_Rect);
+
+		seta_Sprite += 1;
+
+		if (seta_Sprite / 256 == 1)
+		{
+			seta_Sprite = 0;
+		}
+
+
+	} // Fim do while(settings)
+
+
+	// Finalizando das settings
+	SDL_DestroyTexture(botao_Voltar_Texture);
+	SDL_DestroyTexture(botoes_Texture);
+
+	botoes_Texture = NULL;
+	botao_Voltar_Texture = NULL;
+
+} // Fim da função settings
+
+
+void menu(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load_game, bool* som_Ligado)
 {
 	SDL_Texture* background_Texture = load_texture("imagens/bg menu.png", window_Renderer);
 
 	// ------------------------------- //
-	
+
 	SDL_Texture* seta_Menu_Texture = load_texture("imagens/seta menu.png", window_Renderer);
 
 	SDL_Rect seta_Rect; // Rect do local onde a setinha será renderizada
-	seta_Rect.x = (window_Surface->w) / 4 - 16*5;
+	seta_Rect.x = (window_Surface->w) / 4 - 16 * 5;
 	seta_Rect.y = (window_Surface->h) / 2;
-	seta_Rect.w = 16*5;
-	seta_Rect.h = 16*5;
-	
+	seta_Rect.w = 16 * 5;
+	seta_Rect.h = 16 * 5;
+
 	SDL_Rect seta_Clip[8]; // Rect (clip) do sprite da seta
 	for (int i = 0; i < 8; i++)
 	{
@@ -69,11 +364,11 @@ void menu(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load
 
 	// ------------------------------- //
 
-	SDL_Texture* botoes_Texture = load_texture("imagens/botoes.png", window_Renderer);
+	SDL_Texture* botoes_Texture = load_texture("imagens/botoes menu.png", window_Renderer);
 
 	SDL_Rect botoes_Apagados_Rect; // Rect do local onde os botões serão renderizados
-	botoes_Apagados_Rect.x = (window_Surface->w)/4;
-	botoes_Apagados_Rect.y = (window_Surface->h)/2;
+	botoes_Apagados_Rect.x = (window_Surface->w) / 4;
+	botoes_Apagados_Rect.y = (window_Surface->h) / 2;
 	botoes_Apagados_Rect.w = 80 * 7;
 	botoes_Apagados_Rect.h = 48 * 7;
 
@@ -82,24 +377,20 @@ void menu(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load
 	botoes_Apagados_Clip.y = 0;
 	botoes_Apagados_Clip.w = 80;
 	botoes_Apagados_Clip.h = 48;
-	
-	SDL_Rect botoes_Acessos_Rect[3]; // Array de rects do local onde o botão acesso acesso será renderizado
-	for (int i = 0; i < 3 ; i++)
-	{
-		botoes_Acessos_Rect[i].x = (window_Surface->w) / 4;
-		botoes_Acessos_Rect[i].y = (window_Surface->h) / 2 + (16 * 7 * i);
-		botoes_Acessos_Rect[i].w = 80 * 7;
-		botoes_Acessos_Rect[i].h = 16 * 7;
-	}
 
-	SDL_Rect botoes_Acessos_Clip[3]; // Array de Rects, um para cada botão acesso
-	for (int i = 0; i < 3; i++)
-	{
-		botoes_Acessos_Clip[i].x = 0;
-		botoes_Acessos_Clip[i].y = 48 + 16 * i;
-		botoes_Acessos_Clip[i].w = 80;
-		botoes_Acessos_Clip[i].h = 16;
-	}
+	SDL_Rect botao_Acesso_Rect;
+	botao_Acesso_Rect.x = (window_Surface->w) / 4;
+	botao_Acesso_Rect.y = (window_Surface->h) / 2 + (16 * 7 * 0);
+	botao_Acesso_Rect.w = 80 * 7;
+	botao_Acesso_Rect.h = 16 * 7;
+
+	SDL_Rect botao_Acesso_Clip;
+	botao_Acesso_Clip.x = 0;
+	botao_Acesso_Clip.y = 48 + 16 * 0;
+	botao_Acesso_Clip.w = 80;
+	botao_Acesso_Clip.h = 16;
+
+
 
 	// ------------------------------- //
 
@@ -126,38 +417,52 @@ void menu(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load
 				switch (event.key.keysym.sym)
 				{
 				case SDLK_DOWN:
-					if (seta_Posicao -1 <= 2)
+					if (seta_Posicao + 1 <= 2)
 					{
 						seta_Rect.y += 120;
 						seta_Posicao += 1;
+
+						alterar_retangulo(&botao_Acesso_Rect, 0, +(16 * 7), 0, 0);
+						alterar_retangulo(&botao_Acesso_Clip, 0, +(16), 0, 0);
 					}
 					break;
 
 				case SDLK_UP:
-					if (seta_Posicao -1 >= 0)
+					if (seta_Posicao - 1 >= 0)
 					{
 						seta_Rect.y -= 120;
 						seta_Posicao -= 1;
+
+						alterar_retangulo(&botao_Acesso_Rect, 0, -(16 * 7), 0, 0);
+						alterar_retangulo(&botao_Acesso_Clip, 0, -(16), 0, 0);
 					}
 					break;
+
 				case SDLK_s:
-					if (seta_Posicao +1 <= 2)
+					if (seta_Posicao + 1 <= 2)
 					{
 						seta_Rect.y += 120;
 						seta_Posicao += 1;
+
+						alterar_retangulo(&botao_Acesso_Rect, 0, +(16 * 7), 0, 0);
+						alterar_retangulo(&botao_Acesso_Clip, 0, +(16), 0, 0);
 					}
 					break;
 
 				case SDLK_w:
-					if (seta_Posicao -1 >= 0)
+					if (seta_Posicao - 1 >= 0)
 					{
 						seta_Rect.y -= 120;
 						seta_Posicao -= 1;
+
+						alterar_retangulo(&botao_Acesso_Rect, 0, -(16 * 7), 0, 0);
+						alterar_retangulo(&botao_Acesso_Clip, 0, -(16), 0, 0);
 					}
 					break;
-				case SDLK_SPACE:
+
+				case SDLK_KP_ENTER:
 					// swittch que desfine a escolha do jogador em relação aos botões
-					switch(seta_Posicao) // 0 - New game | 1 - Load game | 2 - settings
+					switch (seta_Posicao) // 0 - New game | 1 - Load game | 2 - settings
 					{
 					case 0:
 						menu = false;
@@ -167,36 +472,59 @@ void menu(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load
 						(*load_game) = true;
 						break;
 					case 2:
-						settings();
+						settings(window_Renderer, window_Surface, seta_Menu_Texture, seta_Clip, background_Texture, som_Ligado);
 						break;
 					}
+					break;
+
+				case SDLK_SPACE:
+					// swittch que desfine a escolha do jogador em relação aos botões
+					switch (seta_Posicao) // 0 - New game | 1 - Load game | 2 - settings
+					{
+					case 0:
+						menu = false;
+						break;
+					case 1:
+						menu = false;
+						(*load_game) = true;
+						break;
+					case 2:
+						SDL_RenderCopy(window_Renderer, background_Texture, NULL, NULL);
+						settings(window_Renderer, window_Surface, seta_Menu_Texture, seta_Clip, background_Texture, som_Ligado);
+						break;
+					}
+					break;
 				}
 			} // Fim do switch das teclas
 		} // Fim do loop de eventos
 
 		SDL_RenderCopy(window_Renderer, background_Texture, NULL, NULL);
 		SDL_RenderCopy(window_Renderer, botoes_Texture, &botoes_Apagados_Clip, &botoes_Apagados_Rect);
-		SDL_RenderCopy(window_Renderer, seta_Menu_Texture, &seta_Clip[seta_Sprite/32], &seta_Rect);
-		SDL_RenderCopy(window_Renderer, botoes_Texture, &botoes_Acessos_Clip[seta_Posicao], &botoes_Acessos_Rect[seta_Posicao]);
+		SDL_RenderCopy(window_Renderer, seta_Menu_Texture, &seta_Clip[seta_Sprite / 32], &seta_Rect);
+		SDL_RenderCopy(window_Renderer, botoes_Texture, &botao_Acesso_Clip, &botao_Acesso_Rect);
 
 		seta_Sprite += 1;
-		
+
 		if (seta_Sprite / 256 == 1)
 		{
 			seta_Sprite = 0;
 		}
 
 	} // fim do while(menu)
-	
+
 	// Finalizando o menu
 	SDL_DestroyTexture(background_Texture);
+	SDL_DestroyTexture(botoes_Texture);
 	SDL_DestroyTexture(seta_Menu_Texture);
 
 	background_Texture = NULL;
+	botoes_Texture = NULL;
 	seta_Menu_Texture = NULL;
 
 } // fim da função menu
 
+
+// --------------------------------------------------------------------------------------- //
 
 
 int main(int argc, char* argv[])
@@ -206,6 +534,8 @@ int main(int argc, char* argv[])
 
 	bool game_loop = true;
 	bool load_game = false;
+
+	bool som_Ligado = true;
 
 	SDL_Event event;
 
@@ -225,7 +555,7 @@ int main(int argc, char* argv[])
 	
 	// ------------------------------- //
 
-	menu(window_Renderer, main_Surface, &load_game);
+	menu(window_Renderer, main_Surface, &load_game, &som_Ligado);
 	
 	/*
 	game();
