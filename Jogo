@@ -5,7 +5,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
-
+#include <time.h>
 
 
 // Chama todas as funções init necessárias
@@ -54,17 +54,36 @@ void alterar_retangulo(SDL_Rect* rect, int x, int y, int w, int h)
 }
 
 
+// Função que salva o jogo
+void save_game()
+{
+	FILE* file = fopen("imagens\texte.txt", "w");
+
+	char mensagem[9] = "mensagem";
+
+	fwrite(&mensagem, sizeof(mensagem), 9, file);
+
+	fclose(file);
+}
+
+
 // -------------------------------------------------------------------------------------- //
 
 
 void creditos(SDL_Renderer* window_Renderer)
 {
+	SDL_Texture* creditos_Texture = load_texture("imagens/creditos.png", window_Renderer);
+	SDL_SetTextureAlphaMod(creditos_Texture, 50);
+	SDL_SetTextureBlendMode(creditos_Texture, SDL_BLENDMODE_ADD);
+	SDL_SetTextureColorMod(creditos_Texture, 255, 255, 255);
+
+	SDL_RenderCopy(window_Renderer, creditos_Texture, NULL, NULL);
+	
+	// ------------------------------- //
+
 	SDL_Event event;
 	bool creditos = true;
-
-	SDL_Texture* creditos_Texture = load_texture("imagens/creditos.png", window_Renderer);
-	SDL_RenderCopy(window_Renderer, creditos_Texture, NULL, NULL);
-
+	
 	while (creditos)
 	{
 		SDL_RenderPresent(window_Renderer);
@@ -77,6 +96,7 @@ void creditos(SDL_Renderer* window_Renderer)
 				creditos = false;
 			}
 		} // Fim do loop de eventos
+	
 	} // Fim do while(creditos)
 
 	// Finalização dos créditos
@@ -240,7 +260,7 @@ void settings(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, SDL_Te
 					}
 					break;
 
-				case SDLK_KP_ENTER:
+				case SDLK_RETURN:
 					switch (seta_Posicao)
 					{
 					case 0:
@@ -460,7 +480,7 @@ void menu(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load
 					}
 					break;
 
-				case SDLK_KP_ENTER:
+				case SDLK_RETURN:
 					// swittch que desfine a escolha do jogador em relação aos botões
 					switch (seta_Posicao) // 0 - New game | 1 - Load game | 2 - settings
 					{
@@ -524,17 +544,964 @@ void menu(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load
 } // fim da função menu
 
 
+
 // --------------------------------------------------------------------------------------- //
 
 
+void escolher_dificuldade(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, int* dificuldade)
+{
+	SDL_Texture* dificulty_Texture = load_texture("imagens/bg dificuldade.png", window_Renderer); //textura do background de dificuldade
+
+	bool new_game = true;
+	int seta_Posicao = 0;
+	int seta_Sprite = 1;
+	SDL_Event event;
+
+	//-----------------------------//
+
+	SDL_Texture* seta_Menu_Texture = load_texture("imagens/seta menu.png", window_Renderer);
+
+	SDL_Rect seta_Rect; // Rect do local onde a setinha será renderizada
+	seta_Rect.x = (window_Surface->w) / 4 - 16 * 5;
+	seta_Rect.y = (window_Surface->h) / 2;
+	seta_Rect.w = 16 * 5;
+	seta_Rect.h = 16 * 5;
+
+	SDL_Rect seta_Clip[8]; // Rect (clip) do sprite da seta
+	for (int i = 0; i < 8; i++)
+	{
+		seta_Clip[i].x = 16 * i;
+		seta_Clip[i].y = 0;
+		seta_Clip[i].w = 16;
+		seta_Clip[i].h = 16;
+	}
+
+	//----------------------------//
+
+	SDL_Texture* botoes_Texture = load_texture("imagens/botoes dificuldade.png", window_Renderer);
+
+	SDL_Rect botoes_Apagados_Rect; // Rect do local onde os botões serão renderizados
+	botoes_Apagados_Rect.x = (window_Surface->w) / 4;
+	botoes_Apagados_Rect.y = (window_Surface->h) / 2;
+	botoes_Apagados_Rect.w = 80 * 7;
+	botoes_Apagados_Rect.h = 48 * 7;
+
+	SDL_Rect botoes_Apagados_Clip; // Rect (clip) para todos os botões apagados
+	botoes_Apagados_Clip.x = 0;
+	botoes_Apagados_Clip.y = 0;
+	botoes_Apagados_Clip.w = 80;
+	botoes_Apagados_Clip.h = 48;
+
+	SDL_Rect botoes_Acessos_Rect[3]; // Array de rects do local onde o botão acesso acesso será renderizado
+	for (int i = 0; i < 3; i++)
+	{
+		botoes_Acessos_Rect[i].x = (window_Surface->w) / 4;
+		botoes_Acessos_Rect[i].y = (window_Surface->h) / 2 + (16 * 7 * i);
+		botoes_Acessos_Rect[i].w = 80 * 7;
+		botoes_Acessos_Rect[i].h = 16 * 7;
+	}
+
+	SDL_Rect botoes_Acessos_Clip[3]; // Array de Rects, um para cada botão acesso
+	for (int i = 0; i < 3; i++)
+	{
+		botoes_Acessos_Clip[i].x = 0;
+		botoes_Acessos_Clip[i].y = 48 + 16 * i;
+		botoes_Acessos_Clip[i].w = 80;
+		botoes_Acessos_Clip[i].h = 16;
+	}
+
+	// ------------------------------- //
+
+	while (new_game)
+	{
+		SDL_RenderPresent(window_Renderer);
+
+		while (SDL_PollEvent(&event) != 0) // Enquanto existir evento o loop continua
+		{
+			// Evento: fechar main_Window
+			if (event.type == SDL_QUIT)
+			{
+				new_game = false;
+			}
+			else if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym) // Evento: tecla pressionada
+				{
+				case SDLK_DOWN:
+					if (seta_Posicao + 1 <= 2)
+					{
+						seta_Rect.y += 120;
+						seta_Posicao += 1;
+					}
+					break;
+
+				case SDLK_UP:
+					if (seta_Posicao - 1 >= 0)
+					{
+						seta_Rect.y -= 120;
+						seta_Posicao -= 1;
+					}
+					break;
+				case SDLK_s:
+					if (seta_Posicao + 1 <= 2)
+					{
+						seta_Rect.y += 120;
+						seta_Posicao += 1;
+					}
+					break;
+
+				case SDLK_w:
+					if (seta_Posicao - 1 >= 0)
+					{
+						seta_Rect.y -= 120;
+						seta_Posicao -= 1;
+					}
+					break;
+				case SDLK_RETURN:
+					new_game = false;
+					switch (seta_Posicao) //seta varia de 0 a 2
+					{
+					case 0:
+						*dificuldade = 0; //facil
+						break;
+
+					case 1:
+						*dificuldade = 20; //medio
+						break;
+
+					case 2:
+						*dificuldade = 40; //dificil
+						break;
+					}
+					break;
+
+				case SDLK_SPACE:
+					new_game = false;
+					switch (seta_Posicao) //seta varia de 0 a 2
+					{
+					case 0:
+						*dificuldade = 0; //facil
+						break;
+
+					case 1:
+						*dificuldade = 20; //medio
+						break;
+
+					case 2:
+						*dificuldade = 40; //dificil
+						break;
+					}
+					break;
+				}
+			}
+
+		} // Fim do loop de eventos
+
+		SDL_RenderCopy(window_Renderer, dificulty_Texture, NULL, NULL);
+		SDL_RenderCopy(window_Renderer, botoes_Texture, &botoes_Apagados_Clip, &botoes_Apagados_Rect);
+		SDL_RenderCopy(window_Renderer, seta_Menu_Texture, &seta_Clip[seta_Sprite / 32], &seta_Rect);
+		SDL_RenderCopy(window_Renderer, botoes_Texture, &botoes_Acessos_Clip[seta_Posicao], &botoes_Acessos_Rect[seta_Posicao]);
+
+		seta_Sprite += 1;
+
+		if (seta_Sprite / 256 == 1)
+		{
+			seta_Sprite = 0;
+		}
+	} // fim do while(new_game)
+	
+	  
+	// Finalizando a escolha de dificuldades
+	SDL_DestroyTexture(dificulty_Texture);
+	SDL_DestroyTexture(botoes_Texture);
+	SDL_DestroyTexture(seta_Menu_Texture);
+
+	dificulty_Texture = NULL;
+	botoes_Texture = NULL;
+	seta_Menu_Texture = NULL;
+
+}// Fim da função escolha_dificuldade()
+
+
+void inicio_jornal(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface)
+{
+	SDL_Texture* jornal_Texture = load_texture("imagens/jornal detetive 1.png", window_Renderer);
+
+	bool Inicio_jornal = true;
+	SDL_Event event;
+
+	while (Inicio_jornal)
+	{
+		SDL_RenderPresent(window_Renderer);
+
+		while (SDL_PollEvent(&event) != 0) // Enquanto existir evento o loop continua
+		{
+			// Evento: fechar main_Window
+			if (event.type == SDL_QUIT)
+			{
+				Inicio_jornal = false;
+			}
+			else if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)// Evento: tecla pressionada
+				{
+				case SDLK_RETURN:
+					Inicio_jornal = false;
+					break;
+
+				case SDLK_SPACE:
+					Inicio_jornal = false;
+					break;
+				}
+			}
+
+		} // Fim do loop de eventos
+
+		SDL_RenderCopy(window_Renderer, jornal_Texture, NULL, NULL);
+
+	} // fim do while(inicio_jornal)
+
+	SDL_DestroyTexture(jornal_Texture);
+
+	jornal_Texture = NULL;
+
+}// Finalizando o inicio_jornal
+
+
+// --------------------------------------------------------------------------------------- //
+
+
+void escolha_cenarios(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, int* dificuldade, bool som_Ligado)
+{
+	// mini_game(window_Renderer, main_Surface, &som_Ligado);  <---- eh assim que chama a função do mini jogo
+
+	int lugar = 0; //lugar vai de 0 a 4
+	bool game_loop = true;
+	SDL_Event event;
+
+	SDL_Texture* cidade_Texture = load_texture("imagens/cidade 0.png", window_Renderer); //delegacia destacada
+
+	while (game_loop)
+	{
+		SDL_RenderPresent(window_Renderer);
+		while (SDL_PollEvent(&event) != 0) // Enquanto existir evento o loop continua
+		{
+			// Evento: fechar main_Window
+			if (event.type == SDL_QUIT)
+			{
+				game_loop = false;
+			}
+			else if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_a:
+					if (lugar - 1 < 0)
+					{
+						lugar = 4;
+					}
+					else
+					{
+						lugar--;
+					}
+					break;
+
+				case SDLK_d:
+					if (lugar + 1 > 4)
+					{
+						lugar = 0;
+					}
+					else
+					{
+						lugar++;
+					}
+					break;
+				case SDLK_LEFT:
+					if (lugar - 1 < 0)
+					{
+						lugar = 4;
+					}
+					else
+					{
+						lugar--;
+					}
+					break;
+
+				case SDLK_RIGHT:
+					if (lugar + 1 > 4)
+					{
+						lugar = 0;
+					}
+					else
+					{
+						lugar++;
+					}
+					break;
+
+				case SDLK_RETURN: //faltam as funçoes para entrar dentro das casas / delegacia e implementar a possibilidade de entrar no minigame
+					break;
+
+				case SDLK_SPACE:
+					break;
+				}
+			}// Evento: tecla pressionada
+
+
+			if (lugar == 0) //"switch" para trocar o sprite destacado, implementei por switch mas tava dando erro, entao deixei com if/else if
+			{
+				SDL_DestroyTexture(cidade_Texture);
+				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 0.png", window_Renderer);
+			}
+			else if (lugar == 1)
+			{
+				SDL_DestroyTexture(cidade_Texture);
+				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 1.png", window_Renderer);
+			}
+			else if (lugar == 2)
+			{
+				SDL_DestroyTexture(cidade_Texture);
+				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 2.png", window_Renderer);
+			}
+			else if (lugar == 3)
+			{
+				SDL_DestroyTexture(cidade_Texture);
+				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 3.png", window_Renderer);
+			}
+			else if (lugar == 4)
+			{
+				SDL_DestroyTexture(cidade_Texture);
+				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 4.png", window_Renderer);
+			}
+
+		}// Fim do loop de eventos
+
+		SDL_RenderCopy(window_Renderer, cidade_Texture, NULL, NULL);
+
+	}//fim do while(game_loop) 
+
+	SDL_DestroyTexture(cidade_Texture);
+
+	cidade_Texture = NULL;
+
+} // fim do game_loop
+
+void mini_game(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* som_Ligado)
+{
+	const int velAsssassino = 75; //delay para retardar o movimento do assassino
+	const int quantBlocos = 20; //quantidade de blocos a serem criados
+
+	const int SCREEN_WIDTH = 1280;
+	const int SCREEN_HEIGHT = 720;
+
+	SDL_Texture* gTexture = NULL;
+	SDL_Texture* detetive1 = NULL;
+	SDL_Texture* detetive2 = NULL;
+	SDL_Texture* detetive3 = NULL;
+	SDL_Texture* detetive4 = NULL;
+	SDL_Texture* detetive5 = NULL;
+	SDL_Texture* detetive6 = NULL;
+	SDL_Texture* detetive7 = NULL;
+	SDL_Texture* assassino1 = NULL;
+	SDL_Texture* assassino2 = NULL;
+	SDL_Texture* assassino3 = NULL;
+	SDL_Texture* obst = NULL;
+	SDL_Texture* barraDeLife1 = NULL;
+	SDL_Texture* barraDeLife2 = NULL;
+	SDL_Texture* barraDeLife3 = NULL;
+	SDL_Texture* barraDeLife4 = NULL;
+	SDL_Texture* barraDeLife5 = NULL;
+	SDL_Texture* projetil = NULL;
+
+
+	detetive1 = load_texture("imagens/detetive1.png", window_Renderer);
+	detetive2 = load_texture("imagens/detetive2.png", window_Renderer);
+	detetive3 = load_texture("imagens/detetive3.png", window_Renderer);
+	detetive4 = load_texture("imagens/detetive4.png", window_Renderer);
+	detetive5 = load_texture("imagens/detetive5.png", window_Renderer);
+	detetive6 = load_texture("imagens/detetive6.png", window_Renderer);
+	detetive7 = load_texture("imagens/detetive7.png", window_Renderer);
+	assassino1 = load_texture("imagens/assassino1.png", window_Renderer);
+	assassino2 = load_texture("imagens/assassino2.png", window_Renderer);
+	assassino3 = load_texture("imagens/assassino3.png", window_Renderer);
+	obst = load_texture("imagens/obstaculo.png", window_Renderer);
+	barraDeLife1 = load_texture("imagens/barradelife1.png", window_Renderer);
+	barraDeLife2 = load_texture("imagens/barradelife2.png", window_Renderer);
+	barraDeLife3 = load_texture("imagens/barradelife3.png", window_Renderer);
+	barraDeLife4 = load_texture("imagens/barradelife4.png", window_Renderer);
+	barraDeLife5 = load_texture("imagens/barradelife5.png", window_Renderer);
+	projetil = load_texture("imagens/tiro.png", window_Renderer);
+
+
+	//contadores de vida
+	int vidaDetetive = 4;
+	int vidaAssassino = 4;
+
+	//booleanas de movimento
+	bool esq = false;
+	bool dir = false;
+	bool atirar = false;
+
+	SDL_bool colIniBloq[quantBlocos];
+	SDL_bool colProjIni;
+
+	//contadores de frames
+	int frameAtual = 0;
+	int frameDetetive = 0;
+	int qtdFrame = 3;
+
+
+	//randoniza a posição X do assassino
+	srand(time(NULL));
+
+	//função booleana de execução do loop e criação da variavel atribuida a eventos
+	bool executando = true;
+	SDL_Event click;
+
+	//--Area de criação de retangulos :D --//
+
+	SDL_Rect detetiveRect;
+	detetiveRect.x = SCREEN_WIDTH / 2 - 25;
+	detetiveRect.y = SCREEN_HEIGHT - 50;
+	detetiveRect.w = 50;
+	detetiveRect.h = 50;
+
+	SDL_Rect assassinoRect;
+	assassinoRect.x = rand() % 1029 - rand() % 1029;
+	while (assassinoRect.x < 0)
+	{
+		assassinoRect.x = rand() % 1029 - rand() % 1029;
+	}
+	assassinoRect.y = 0;
+	assassinoRect.w = 50;
+	assassinoRect.h = 50;
+
+	float velMovAssassinoX = 8;
+	float velMovAssassinoY = 8;
+
+
+	bool blocoViVo[quantBlocos];
+	for (int i = 0; i < quantBlocos; i++)
+	{
+		blocoViVo[i] = true;
+	}
+	SDL_Rect obstaculosRect[quantBlocos];
+	for (int i = 0, x = 4, y = 150; i < quantBlocos; i++, x += 250)
+	{
+		if (blocoViVo[i] == true)
+		{
+			if (x > 1010)
+			{
+				x = 4;
+				y += 150;
+			}
+			obstaculosRect[i].x = x;
+			obstaculosRect[i].y = y;
+			obstaculosRect[i].w = 60;
+			obstaculosRect[i].h = 20;
+		}
+	}
+
+
+	SDL_Rect lifeDetetiveRect;
+	lifeDetetiveRect.x = 0;
+	lifeDetetiveRect.y = 0;
+	lifeDetetiveRect.w = 200;
+	lifeDetetiveRect.h = 60;
+
+	SDL_Rect lifeAssassinoRect;
+	lifeAssassinoRect.x = 880;
+	lifeAssassinoRect.y = 0;
+	lifeAssassinoRect.w = 200;
+	lifeAssassinoRect.h = 60;
+
+	SDL_Rect projetilRect;
+	SDL_Rect projetilRectCopia;
+	bool projetilVida = true;
+
+	float velProjetil = 20;
+
+
+	//--fim da área de criação de retângulos--//
+
+	//loop principal do jogo
+	while (executando)
+	{
+
+		//eventos de comando do teclado/mouse
+		while (SDL_PollEvent(&click))
+		{
+			//fechando a janela com ESC ou clique no X
+			if (click.type == SDL_QUIT)
+			{
+				executando = false;
+			}
+
+			switch (click.key.keysym.sym)
+			{
+			case SDLK_ESCAPE:
+				executando = false;
+			}
+
+			if (click.type == SDL_KEYDOWN)
+			{
+				if (click.key.keysym.sym == SDLK_a)
+				{
+					esq = true;
+				}
+				else if (click.key.keysym.sym == SDLK_d)
+				{
+					dir = true;
+				}
+				else if (click.key.keysym.sym == SDLK_k)
+				{
+					if (projetilVida)
+					{
+						projetilRect.x = detetiveRect.x;
+						projetilRect.y = SCREEN_HEIGHT - 50;
+						projetilRect.w = 10;
+						projetilRect.h = 20;
+
+						projetilRectCopia = projetilRect;
+					}
+
+					atirar = true;
+				}
+			}
+			else if (click.type == SDL_KEYUP)
+				if (click.key.keysym.sym == SDLK_a)
+				{
+					esq = false;
+				}
+				else if (click.key.keysym.sym == SDLK_d)
+				{
+					dir = false;
+				}
+		}
+
+		//---------------lógica----------------------//
+		//------------------------------------------//
+
+		//---DETETIVE---//
+
+		//movimento do detetive
+		if (esq == true)
+		{
+			detetiveRect.x -= 24;
+		}
+		else if (dir == true)
+		{
+			detetiveRect.x += 24;
+		}
+
+		//colisão do detetive com a tela
+		if (detetiveRect.x < 0)
+		{
+			detetiveRect.x = 0;
+		}
+		else if (detetiveRect.x > SCREEN_WIDTH - detetiveRect.w)
+		{
+			detetiveRect.x = SCREEN_WIDTH - detetiveRect.w;
+		}
+
+		//--ASSASSINO--//
+
+		//movimento do inimigo
+		assassinoRect.x += velMovAssassinoX;
+		assassinoRect.y += velMovAssassinoY;
+
+		//colisão do inimigo com a tela
+		if (assassinoRect.x < 0)
+		{
+			assassinoRect.x = 0;
+			if (assassinoRect.x == 0)
+			{
+				velMovAssassinoX = -velMovAssassinoX;
+			}
+		}
+		if (assassinoRect.x > SCREEN_WIDTH - assassinoRect.w)
+		{
+			assassinoRect.x = SCREEN_WIDTH - assassinoRect.w;
+			if (assassinoRect.x == SCREEN_WIDTH - assassinoRect.w)
+			{
+				velMovAssassinoX = -velMovAssassinoX;
+			}
+		}
+		if (assassinoRect.y < 0)
+		{
+			assassinoRect.y = 0;
+			if (assassinoRect.y == 0)
+			{
+				velMovAssassinoY = -velMovAssassinoY;
+			}
+		}
+		if (assassinoRect.y > SCREEN_HEIGHT - assassinoRect.h)
+		{
+			assassinoRect.y = SCREEN_HEIGHT - assassinoRect.h;
+			if (assassinoRect.y == SCREEN_HEIGHT - assassinoRect.h)
+			{
+				velMovAssassinoY = -velMovAssassinoY;
+			}
+		}
+
+		//--PROJETIL--//
+
+		// posição do projetil
+		if (atirar == false)
+		{
+			projetilRect.x = detetiveRect.x;
+		}
+
+		//movimento do projetil
+
+		if (atirar == true)
+		{
+			if (projetilRect.y > 0)
+			{
+				projetilRect.y = projetilRect.y - velProjetil;
+				projetilRectCopia.y = projetilRect.y - velProjetil;
+			}
+			else if (projetilRect.y <= 0)
+			{
+				projetilRect.y = SCREEN_HEIGHT - 50;
+				projetilRectCopia.y = SCREEN_HEIGHT - 50;
+				projetilVida = false;
+				atirar = false;
+			}
+		}
+
+
+		//--COLISÕES--//
+
+		//colisão do inimigo com o detetive
+		SDL_bool colIniDet = SDL_HasIntersection(&assassinoRect, &detetiveRect);
+
+		if (colIniDet)
+		{
+			velMovAssassinoX = velMovAssassinoX;
+			velMovAssassinoY = -velMovAssassinoY;
+
+			vidaDetetive--;
+
+			if (vidaDetetive == 0)
+			{
+				executando = false;
+			}
+		}
+
+		//colisão do inimigo com os obstaculos
+
+		for (int i = 0; i < quantBlocos; i++)
+		{
+			colIniBloq[i] = (SDL_bool)true;
+		}
+
+		for (int i = 0; i < quantBlocos; i++)
+		{
+			colIniBloq[i] = SDL_HasIntersection(&assassinoRect, &obstaculosRect[i]);
+		}
+
+		for (int i = 0; i < quantBlocos; i++)
+		{
+			if (colIniBloq[i] == true)
+			{
+				if (blocoViVo[i] == true)
+				{
+					velMovAssassinoX = velMovAssassinoX * 1.1;
+					velMovAssassinoY = -velMovAssassinoY * 1.1;
+
+					blocoViVo[i] = false;
+				}
+			}
+		}
+
+		//colisão projetil com inimigo
+
+		colProjIni = SDL_HasIntersection(&projetilRect, &assassinoRect);
+
+		if (colProjIni)
+		{
+			projetilRect.y = SCREEN_HEIGHT - 50;
+
+			atirar = false;
+
+			vidaAssassino--;
+			if (vidaAssassino <= 0)
+			{
+				vidaAssassino = 0;
+				executando = false;
+			}
+		}
+
+
+		//--------renderização---------//
+		//----------------------------//
+
+		//limpa a renderização
+		SDL_RenderClear(window_Renderer);
+
+		//renderiza a textura na tela
+		SDL_RenderCopy(window_Renderer, gTexture, NULL, NULL);
+
+
+		if (esq)
+		{
+			switch (frameDetetive)
+			{
+			case 0:
+				SDL_RenderCopy(window_Renderer, detetive2, NULL, &detetiveRect);
+				break;
+			case 1:
+				SDL_RenderCopy(window_Renderer, detetive3, NULL, &detetiveRect);
+				break;
+			case 2:
+				SDL_RenderCopy(window_Renderer, detetive4, NULL, &detetiveRect);
+				break;
+			}
+		}
+		else if (dir)
+		{
+			switch (frameDetetive)
+			{
+			case 0:
+				SDL_RenderCopy(window_Renderer, detetive5, NULL, &detetiveRect);
+				break;
+			case 1:
+				SDL_RenderCopy(window_Renderer, detetive6, NULL, &detetiveRect);
+				break;
+			case 2:
+				SDL_RenderCopy(window_Renderer, detetive7, NULL, &detetiveRect);
+				break;
+			}
+		}
+		else
+		{
+			SDL_RenderCopy(window_Renderer, detetive1, NULL, &detetiveRect);
+		}
+
+		switch (frameAtual)
+		{
+		case 0:
+			SDL_RenderCopy(window_Renderer, assassino1, NULL, &assassinoRect);
+			break;
+		case 1:
+			SDL_RenderCopy(window_Renderer, assassino2, NULL, &assassinoRect);
+			break;
+		case 2:
+			SDL_RenderCopy(window_Renderer, assassino3, NULL, &assassinoRect);
+			break;
+		}
+
+		for (int i = 0; i < quantBlocos; i++)
+		{
+			if (blocoViVo[i] == true)
+			{
+				SDL_RenderCopy(window_Renderer, obst, NULL, &obstaculosRect[i]);
+			}
+		}
+
+		switch (vidaDetetive)
+		{
+		case 4:
+			SDL_RenderCopy(window_Renderer, barraDeLife1, NULL, &lifeDetetiveRect);
+			break;
+		case 3:
+			SDL_RenderCopy(window_Renderer, barraDeLife2, NULL, &lifeDetetiveRect);
+			break;
+		case 2:
+			SDL_RenderCopy(window_Renderer, barraDeLife3, NULL, &lifeDetetiveRect);
+			break;
+		case 1:
+			SDL_RenderCopy(window_Renderer, barraDeLife4, NULL, &lifeDetetiveRect);
+			break;
+		case 0:
+			SDL_RenderCopy(window_Renderer, barraDeLife5, NULL, &lifeDetetiveRect);
+			break;
+		}
+		
+		switch (vidaAssassino)
+		{
+		case 4:
+			SDL_RenderCopy(window_Renderer, barraDeLife1, NULL, &lifeAssassinoRect);
+			break;
+		case 3:
+			SDL_RenderCopy(window_Renderer, barraDeLife2, NULL, &lifeAssassinoRect);
+			break;
+		case 2:
+			SDL_RenderCopy(window_Renderer, barraDeLife3, NULL, &lifeAssassinoRect);
+			break;
+		case 1:
+			SDL_RenderCopy(window_Renderer, barraDeLife4, NULL, &lifeAssassinoRect);
+			break;
+		case 0:
+			SDL_RenderCopy(window_Renderer, barraDeLife5, NULL, &lifeAssassinoRect);
+			break;
+		}
+
+		if (atirar == true)
+		{
+			if (projetilVida == true || 1)
+			{
+				SDL_RenderCopy(window_Renderer, projetil, NULL, &projetilRect);
+			}
+		}
+		else if (atirar == false)
+		{
+			projetilVida == true;
+		}
+
+
+		//atualiza a renderização
+		SDL_RenderPresent(window_Renderer);
+
+		frameAtual++;
+		if (frameAtual == 3)
+			frameAtual = 0;
+
+		frameDetetive++;
+		if (frameDetetive == 3)
+			frameDetetive = 0;
+
+
+
+		SDL_Delay(velAsssassino);
+	}
+
+	// Finalização do mini_game()
+
+	SDL_DestroyTexture(gTexture);
+	SDL_DestroyTexture(detetive1);
+	SDL_DestroyTexture(detetive2);
+	SDL_DestroyTexture(detetive3);
+	SDL_DestroyTexture(detetive4);
+	SDL_DestroyTexture(detetive5);
+	SDL_DestroyTexture(detetive6);
+	SDL_DestroyTexture(detetive7);
+	SDL_DestroyTexture(assassino1);
+	SDL_DestroyTexture(assassino2);
+	SDL_DestroyTexture(assassino3);
+	SDL_DestroyTexture(obst);
+	SDL_DestroyTexture(barraDeLife1);
+	SDL_DestroyTexture(barraDeLife2);
+	SDL_DestroyTexture(barraDeLife3);
+	SDL_DestroyTexture(barraDeLife4);
+	SDL_DestroyTexture(barraDeLife5);
+	SDL_DestroyTexture(projetil);
+
+	gTexture = NULL;
+	detetive1 = NULL;
+	detetive2 = NULL;
+	detetive3 = NULL;
+	detetive4 = NULL;
+	detetive5 = NULL;
+	detetive6 = NULL;
+	detetive7 = NULL;
+	assassino1 = NULL;
+	assassino2 = NULL;
+	assassino3 = NULL;
+	obst = NULL;
+	barraDeLife1 = NULL;
+	barraDeLife2 = NULL;
+	barraDeLife3 = NULL;
+	barraDeLife4 = NULL;
+	barraDeLife5 = NULL;
+	projetil = NULL;
+
+} // Fim da função mini_game()
+
+
+// --------------------------------------------------------------------------------------- //
+
+
+void cenario_1(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load_game, bool* som_Ligado)
+{
+	SDL_Texture* background_Texture_1 = load_texture("imagens\casa 1 quarto 1.png", window_Renderer);
+	
+	SDL_Texture* background_texture_2 = load_texture("imagens\casa 1 quarto 2.png", window_Renderer);
+
+	SDL_Texture* background_texture_3 = load_texture("imagens\casa 1 quarto 3.png", window_Renderer);
+
+	// ------------------------------- //
+
+	SDL_Texture* detetive_Texture = load_texture("imagens\ sprites do detetive.png", window_Renderer);
+
+	SDL_Rect detetive_Rect;
+
+	SDL_Rect detetive_Clip;
+
+	// ------------------------------- //
+
+	int cenario_Width = 10*16;
+	int cenario_Height = 10*16;
+	
+	int num_cenario = 1;
+
+	SDL_Event event;
+	bool cenario = true;
+
+	while (cenario)
+	{
+		SDL_RenderPresent(window_Renderer);
+
+		while (SDL_PollEvent(&event) != 0) // Enquanto existir evento o loop continua
+		{
+			// Evento: fechar main_Window
+			if (event.type == SDL_QUIT)
+			{
+				cenario = false;
+			}
+			// Evento: tecla pressionada
+			else if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_DOWN:
+					break;
+				}
+			} // Fim do switch das teclas
+		} // Fim do loop de eventos
+
+		if (num_cenario == 1)
+		{
+			SDL_RenderCopy(window_Renderer, background_Texture_1, NULL, NULL);
+		}
+		else if (num_cenario == 2)
+		{
+			SDL_RenderCopy(window_Renderer, background_texture_2, NULL, NULL);
+		}
+		else if (num_cenario == 3)
+		{
+			SDL_RenderCopy(window_Renderer, background_texture_3, NULL, NULL);
+		}
+		
+
+	} // Fim do while(cenario)
+
+	// Finalizando o cenario
+
+	SDL_DestroyTexture(background_Texture_1);
+	SDL_DestroyTexture(background_texture_2);
+	SDL_DestroyTexture(background_texture_3);
+
+	background_Texture_1 = NULL;
+	background_texture_2 = NULL;
+	background_texture_3 = NULL;
+
+} // Fim da função meu_cenario()
+
+
+// --------------------------------------------------------------------------------------- //
+
 int main(int argc, char* argv[])
 {
+	init();
+
 	int window_Width = 1280;
 	int window_Height = 720;
 
 	bool game_loop = true;
-	bool load_game = false;
 
+	int dificuldade = 0;
+	bool load_game = false;
 	bool som_Ligado = true;
 
 	SDL_Event event;
@@ -556,22 +1523,24 @@ int main(int argc, char* argv[])
 	// ------------------------------- //
 
 	menu(window_Renderer, main_Surface, &load_game, &som_Ligado);
-	
-	/*
-	game();
-	
-	while (game_loop)
+
+	if (load_game)
 	{
-		while (SDL_PollEvent(&event) != 0) // Enquanto existir evento o loop continua
-		{
-			// Evento: fechar main_Window
-			if (event.type == SDL_QUIT)
-			{
-				game_loop = false;
-			}
-		}
+		
 	}
-	*/
+	else
+	{
+		escolher_dificuldade(window_Renderer, main_Surface, &dificuldade);
+		
+		inicio_jornal(window_Renderer, main_Surface);
+	}
+	
+	escolha_cenarios(window_Renderer, main_Surface, &dificuldade, &som_Ligado);
+	
+
+	// ------------------------------- //
+
+	quit();
 
 	return 0;
 }
