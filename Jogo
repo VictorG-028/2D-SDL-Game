@@ -53,6 +53,16 @@ void alterar_retangulo(SDL_Rect* rect, int x, int y, int w, int h)
 	(*rect).h += h;
 }
 
+//
+void coloca_fundo_preto(SDL_Renderer* window_Renderer)
+{
+	SDL_Texture* fundo_Preto_Texture = load_texture("imagens/fundo preto.png", window_Renderer);
+
+	SDL_RenderCopy(window_Renderer, fundo_Preto_Texture, NULL, NULL);
+
+	SDL_DestroyTexture(fundo_Preto_Texture);
+	fundo_Preto_Texture = NULL;
+}
 
 // Função que salva o jogo
 void save_game()
@@ -73,9 +83,9 @@ void save_game()
 void creditos(SDL_Renderer* window_Renderer)
 {
 	SDL_Texture* creditos_Texture = load_texture("imagens/creditos.png", window_Renderer);
-	SDL_SetTextureAlphaMod(creditos_Texture, 50);
-	SDL_SetTextureBlendMode(creditos_Texture, SDL_BLENDMODE_ADD);
-	SDL_SetTextureColorMod(creditos_Texture, 255, 255, 255);
+	// SDL_SetTextureAlphaMod(creditos_Texture, 50);
+	// SDL_SetTextureBlendMode(creditos_Texture, SDL_BLENDMODE_ADD);
+	// SDL_SetTextureColorMod(creditos_Texture, 255, 255, 255);
 
 	SDL_RenderCopy(window_Renderer, creditos_Texture, NULL, NULL);
 	
@@ -771,17 +781,25 @@ void inicio_jornal(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface)
 // --------------------------------------------------------------------------------------- //
 
 
-void escolha_cenarios(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, int* dificuldade, bool som_Ligado)
+void escolha_cenarios(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, int dificuldade, bool som_Ligado)
 {
 	// mini_game(window_Renderer, main_Surface, &som_Ligado);  <---- eh assim que chama a função do mini jogo
+	
+	SDL_Texture* cidade_Texture = load_texture("imagens/cidade otimizada.png", window_Renderer);
 
-	int lugar = 0; //lugar vai de 0 a 4
-	bool game_loop = true;
+	SDL_Texture* contorno_Delegacia_Texture = load_texture("imagens/contorno delegacia.png", window_Renderer);
+	SDL_Texture* contorno_1_Texture = load_texture("imagens/contorno casa 1.png", window_Renderer);
+	SDL_Texture* contorno_2_Texture = load_texture("imagens/contorno casa 2.png", window_Renderer);
+	SDL_Texture* contorno_3_Texture = load_texture("imagens/contorno casa 3.png", window_Renderer);
+	SDL_Texture* contorno_4_Texture = load_texture("imagens/contorno casa 4.png", window_Renderer);
+	
+	
+	int lugar = 0; //lugar vai de 0 a 4 // 0 = delegacia // 1 = cenario 1 // 2 = cenario 2 // 3 = cenario 3 // 4 = cenario 4
+	bool escolha_Cenarios = true;
 	SDL_Event event;
 
-	SDL_Texture* cidade_Texture = load_texture("imagens/cidade 0.png", window_Renderer); //delegacia destacada
 
-	while (game_loop)
+	while (escolha_Cenarios)
 	{
 		SDL_RenderPresent(window_Renderer);
 		while (SDL_PollEvent(&event) != 0) // Enquanto existir evento o loop continua
@@ -789,8 +807,9 @@ void escolha_cenarios(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface
 			// Evento: fechar main_Window
 			if (event.type == SDL_QUIT)
 			{
-				game_loop = false;
+				escolha_Cenarios = false;
 			}
+			// Evento: tecla pressionada
 			else if (event.type == SDL_KEYDOWN)
 			{
 				switch (event.key.keysym.sym)
@@ -838,52 +857,115 @@ void escolha_cenarios(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface
 					}
 					break;
 
-				case SDLK_RETURN: //faltam as funçoes para entrar dentro das casas / delegacia e implementar a possibilidade de entrar no minigame
+				case SDLK_RETURN:
+
+					switch (lugar)
+					{
+					case 0:
+						escolha_Cenarios = false;
+						break;
+					case 1:
+						// cahcne de emboscada aki
+						// função do cenario 1
+
+						break;
+					case 2:
+						// cahcne de emboscada aki
+						// função do cenario 2
+
+						break;
+					case 3:
+						// cahcne de emboscada aki
+						// função do cenario 3
+
+						break;
+					case 4:
+						// cahcne de emboscada aki
+						// função do cenario 4
+
+						break;
+					}
 					break;
 
 				case SDLK_SPACE:
+
+					switch (lugar)
+					{
+					case 0:
+						escolha_Cenarios = false;
+						break;
+					case 1:
+						// cahcne de emboscada aki
+						// função do cenario 1
+
+						break;
+					case 2:
+						// cahcne de emboscada aki
+						// função do cenario 2
+
+						break;
+					case 3:
+						// cahcne de emboscada aki
+						// função do cenario 3
+
+						break;
+					case 4:
+						// cahcne de emboscada aki
+						// função do cenario 4
+
+						break;
+					}
 					break;
 				}
-			}// Evento: tecla pressionada
 
-
-			if (lugar == 0) //"switch" para trocar o sprite destacado, implementei por switch mas tava dando erro, entao deixei com if/else if
-			{
-				SDL_DestroyTexture(cidade_Texture);
-				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 0.png", window_Renderer);
-			}
-			else if (lugar == 1)
-			{
-				SDL_DestroyTexture(cidade_Texture);
-				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 1.png", window_Renderer);
-			}
-			else if (lugar == 2)
-			{
-				SDL_DestroyTexture(cidade_Texture);
-				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 2.png", window_Renderer);
-			}
-			else if (lugar == 3)
-			{
-				SDL_DestroyTexture(cidade_Texture);
-				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 3.png", window_Renderer);
-			}
-			else if (lugar == 4)
-			{
-				SDL_DestroyTexture(cidade_Texture);
-				SDL_Texture* cidade_Texture = load_texture("imagens/cidade 4.png", window_Renderer);
-			}
+			} // Fim do evento de tecla pressionada
 
 		}// Fim do loop de eventos
 
 		SDL_RenderCopy(window_Renderer, cidade_Texture, NULL, NULL);
 
-	}//fim do while(game_loop) 
+		if (lugar == 0)
+		{
+			SDL_RenderCopy(window_Renderer, contorno_Delegacia_Texture, NULL, NULL);
+		}
+		else if (lugar == 1)
+		{
+			SDL_RenderCopy(window_Renderer, contorno_1_Texture, NULL, NULL);
+		}
+		else if (lugar == 2)
+		{
+			SDL_RenderCopy(window_Renderer, contorno_2_Texture, NULL, NULL);
+		}
+		else if (lugar == 3)
+		{
+			SDL_RenderCopy(window_Renderer, contorno_3_Texture, NULL, NULL);
+		}
+		else if (lugar == 4)
+		{
+			SDL_RenderCopy(window_Renderer, contorno_4_Texture, NULL, NULL);
+		}
+		
+
+	}//fim do while(escolha_Cenario) 
 
 	SDL_DestroyTexture(cidade_Texture);
 
+	SDL_DestroyTexture(contorno_Delegacia_Texture);
+	SDL_DestroyTexture(contorno_1_Texture);
+	SDL_DestroyTexture(contorno_2_Texture);
+	SDL_DestroyTexture(contorno_3_Texture);
+	SDL_DestroyTexture(contorno_4_Texture);
+
 	cidade_Texture = NULL;
 
-} // fim do game_loop
+	contorno_Delegacia_Texture = NULL;
+	contorno_1_Texture = NULL;
+	contorno_2_Texture = NULL;
+	contorno_3_Texture = NULL;
+	contorno_4_Texture = NULL;
+
+} // fim da função de esolher cenário
+
 
 void mini_game(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* som_Ligado)
 {
@@ -1411,27 +1493,799 @@ void mini_game(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool*
 
 // --------------------------------------------------------------------------------------- //
 
-
-void cenario_1(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool* load_game, bool* som_Ligado)
+void cenario_delegacia(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, SDL_Rect* main_Rect, bool load_game, int dificuldade, bool som_Ligado)
 {
+
+	coloca_fundo_preto(window_Renderer);
+
+	int cenario_Width = 240;  //15x16
+	int cenario_Height = 192; //12x16
+	int amplificador = 3;
+	int lado = 16;
+
+	SDL_Rect cenario_Rect;
+	cenario_Rect.x = 1280 / 2 - cenario_Width / 2 * amplificador;
+	cenario_Rect.y = 720 / 2 - cenario_Height / 2 * amplificador;
+	cenario_Rect.w = cenario_Width * amplificador;
+	cenario_Rect.h = cenario_Height * amplificador;
+
+	SDL_RenderSetViewport(window_Renderer, &cenario_Rect);
+
+	SDL_Rect grid[12][15];
+
+	for (int linha = 0; linha < 12; linha++)
+	{
+		for (int coluna = 0; coluna < 15; coluna++)
+		{
+			grid[linha][coluna].x = lado * amplificador * coluna;
+			grid[linha][coluna].y = lado * amplificador * linha;
+			grid[linha][coluna].w = lado * amplificador;
+			grid[linha][coluna].h =	lado * amplificador;
+		}
+	}
+
+	// ------------------------------- //
+
+	char delegacia_Centro[12][15] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+								      ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+								      ' ', ' ', '_', '_', '_', '_', ' ', '_', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+								      ' ', '_', '_', '_', '_', '_', ' ', ' ', ' ', '_', '_', '_', '_', '_', ' ',
+								      '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_',
+								      ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+								      ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+								      ' ', '_', '_', ' ', ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+								      ' ', '_', '_', ' ', ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+								      ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+								      ' ', ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ', ' ', ' ',
+								      ' ', ' ', ' ', ' ', ' ', ' ', ' ', '_', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
+									  
+	char delegacia_Direita[12][15] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									   ' ', ' ', ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ', ' ', ' ',
+									   ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_',
+									   '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_',
+									   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									   ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
+
+	char delegacia_Esquerda[12][15] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									    ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+									    ' ', ' ', ' ', ' ', ' ', '_', ' ', ' ', '_', ' ', ' ', ' ', ' ', ' ', ' ',
+									    ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+									    ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_',
+									    ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+									    ' ', ' ', ' ', ' ', '_', ' ', ' ', ' ', '_', ' ', ' ', ' ', '_', '_', ' ',
+									    ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+									    ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+									    ' ', ' ', ' ', ' ', '_', ' ', ' ', ' ', '_', ' ', ' ', ' ', '_', '_', ' ',
+									    ' ', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', ' ',
+										' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '};
+
+	// ------------------------------- //
+
+	SDL_Texture* background_Texture_Centro = load_texture("imagens/delegacia centro.png", window_Renderer);
+
+	SDL_Texture* background_Texture_Direita = load_texture("imagens/delegacia direita.png", window_Renderer);
+
+	SDL_Texture* background_Texture_Esquerda = load_texture("imagens/delegacia esquerda.png", window_Renderer);
+
+
+	SDL_Texture* detetive_Costa_1_Texture = load_texture("imagens/detetive costa 1.png", window_Renderer);
+	SDL_Texture* detetive_Costa_2_Texture = load_texture("imagens/detetive costa 2.png", window_Renderer);
+	SDL_Texture* detetive_Costa_3_Texture = load_texture("imagens/detetive costa 3.png", window_Renderer);
+
+	SDL_Texture* detetive_Frente_1_Texture = load_texture("imagens/detetive frente 1.png", window_Renderer);
+	SDL_Texture* detetive_Frente_2_Texture = load_texture("imagens/detetive frente 2.png", window_Renderer);
+	SDL_Texture* detetive_Frente_3_Texture = load_texture("imagens/detetive frente 3.png", window_Renderer);
+
+	SDL_Texture* detetive_Lado_Direito_1_Texture = load_texture("imagens/detetive lado dir 1.png", window_Renderer);
+	SDL_Texture* detetive_Lado_Direito_2_Texture = load_texture("imagens/detetive lado dir 2.png", window_Renderer);
+	SDL_Texture* detetive_Lado_Direito_3_Texture = load_texture("imagens/detetive lado dir 3.png", window_Renderer);
+
+	SDL_Texture* detetive_Lado_Esquerdo_1_Texture = load_texture("imagens/detetive lado esq 1.png", window_Renderer);
+	SDL_Texture* detetive_Lado_Esquerdo_2_Texture = load_texture("imagens/detetive lado esq 2.png", window_Renderer);
+	SDL_Texture* detetive_Lado_Esquerdo_3_Texture = load_texture("imagens/detetive lado esq 3.png", window_Renderer);
+	
+
+	SDL_Texture* planta_Texture = load_texture("imagens/vaso de planta.png", window_Renderer);
+
+	SDL_Rect planta_Direita_Rect; // lugar da planta direita inferior
+	planta_Direita_Rect.x = grid[9][13].x;
+	planta_Direita_Rect.y = grid[9][13].y;
+	planta_Direita_Rect.w = 16 * amplificador;
+	planta_Direita_Rect.h = 32 * amplificador;
+
+	SDL_Rect planta_Esquerda_Rect; // lugar da planta da esquerda inferior
+	planta_Esquerda_Rect.x = grid[9][1].x;
+	planta_Esquerda_Rect.y = grid[9][1].y;
+	planta_Esquerda_Rect.w = 16 * amplificador;
+	planta_Esquerda_Rect.h = 32 * amplificador;
+
+	SDL_Texture* lixeira_Texture = load_texture("imagens/lixeira.png", window_Renderer);
+
+	SDL_Rect lixeira_Rect; // lugar do lixo
+	lixeira_Rect.x = grid[9][12].x;
+	lixeira_Rect.y = grid[9][12].y;
+	lixeira_Rect.w = 16 * amplificador;
+	lixeira_Rect.h = 32 * amplificador;
+
+	SDL_Texture* bancadas_Texture = load_texture("imagens/delegacia esquerda bancadas.png", window_Renderer);
+
+	// ------------------------------- //
+
+	SDL_Rect detetive_Rect; // falta depender de onde veio
+	detetive_Rect.x = grid[9][7].x -16;
+	detetive_Rect.y = grid[9][7].y -16;
+	detetive_Rect.w = 64;
+	detetive_Rect.h = 64;
+
+	SDL_Rect detetive_Rect_Hitbox = detetive_Rect;
+	detetive_Rect_Hitbox.x += detetive_Rect.w/2;
+	detetive_Rect_Hitbox.w /= 48;
+	detetive_Rect_Hitbox.y += detetive_Rect.h/2;
+	detetive_Rect_Hitbox.h /= 48;
+
+	SDL_Rect texto_Rect;
+	texto_Rect.x = cenario_Width / 2 - 200;
+	texto_Rect.y = cenario_Height / 2 - 100;
+	texto_Rect.w = 400;
+	texto_Rect.h = 200;
+
+	// ------------------------------- //
+
+	// booleanas de movimento
+	bool esq = false;
+	bool dir = false;
+	bool cima = false;
+	bool baixo = false;
+
+	// contadores de frames
+	int frame_Detetive = 0;
+
+	int sobe = 0;
+	int esquerda = 0;
+	int desce = 0;
+	int direita = 0;
+
+	char detetive = 'D';
+	int detetive_Linha = 5;
+	int detetive_Coluna = 7;
+
+	int detetive_Lado = 3; // WASD = 1234 respectivamente
+
+	int num_cenario = 1; // 0 = esquerda  | 1 = centro | 2 = direita
+
+	SDL_Event event;
+	bool cenario = true;
+
+	SDL_RenderCopy(window_Renderer, background_Texture_Centro, NULL, NULL);
+	SDL_RenderCopy(window_Renderer, detetive_Costa_1_Texture, NULL, &detetive_Rect);
+
+	SDL_Texture* hitbox_Texture = load_texture("imagens/fundo preto.png", window_Renderer);
+
+	while (cenario)
+	{
+		SDL_RenderCopy(window_Renderer, hitbox_Texture, NULL, &detetive_Rect_Hitbox);
+
+		SDL_RenderPresent(window_Renderer);
+
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_QUIT)
+			{
+				cenario = false;
+			}
+			else if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_ESCAPE:
+					cenario = false;
+					break;
+
+				case SDLK_w:
+					cima = true;
+
+					detetive_Rect_Hitbox.y = detetive_Rect.y + detetive_Rect.h * 3 / 4;
+					break;
+
+				case SDLK_a:
+					esq = true;
+
+					detetive_Rect_Hitbox.x = detetive_Rect.x + detetive_Rect.w * 3 / 4;
+					break;
+
+				case SDLK_s:
+					baixo = true;
+
+					detetive_Rect_Hitbox.y = detetive_Rect.y + detetive_Rect.h / 4;
+					break;
+
+				case SDLK_d:
+					dir = true;
+
+					detetive_Rect_Hitbox.x = detetive_Rect.x + detetive_Rect.w / 4;
+					break;
+
+				case SDLK_k:
+					break;
+
+				}
+			}
+			else if (event.type == SDL_KEYUP)
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_w:
+					cima = false;
+
+					detetive_Lado = 1;
+
+					detetive_Rect_Hitbox.y = detetive_Rect.y + detetive_Rect.h / 2;
+					break;
+
+				case SDLK_a:
+					esq = false;
+
+					detetive_Lado = 2;
+
+					detetive_Rect_Hitbox.x = detetive_Rect.x + detetive_Rect.w / 2;
+					break;
+
+				case SDLK_s:
+					baixo = false;
+
+					detetive_Lado = 3;
+
+					detetive_Rect_Hitbox.y = detetive_Rect.y + detetive_Rect.h / 2;
+					break;
+
+				case SDLK_d:
+					dir = false;
+
+					detetive_Lado = 4;
+
+					detetive_Rect_Hitbox.x = detetive_Rect.x + detetive_Rect.w / 2;
+					break;
+				}
+			}
+		} // fim do loop de eventos
+
+
+		// Coloca o detetive na matriz em função do seu retangulo no grid
+		for (int linha = 0; linha < 12; linha++)
+		{
+			for (int coluna = 0; coluna < 15; coluna++)
+			{
+				if (SDL_HasIntersection(&detetive_Rect_Hitbox, &grid[linha][coluna]))
+				{
+					printf("detetive_Linha = %i \n", linha);
+					printf("detetive_Coluna = %i \n\n", coluna);
+
+					if (delegacia_Centro[linha][coluna] == '_')
+					{
+						if (num_cenario == 1) // Se está na delegacia centro
+						{
+							delegacia_Centro[linha][coluna] = detetive;
+						}
+						else if (num_cenario == 0) // Se o detetive está na delegacia esquerda
+						{
+							delegacia_Esquerda[linha][coluna] = detetive;
+						}
+						else if (num_cenario == 2) // Se o detetive está na delegacia direita
+						{
+							delegacia_Direita[linha][coluna] = detetive;
+						}
+					}
+
+					detetive_Linha = linha;
+					detetive_Coluna = coluna;
+				}
+				else
+				{
+					if (num_cenario == 1 && delegacia_Centro[linha][coluna] == 'D')
+					{
+						delegacia_Centro[linha][coluna] = '_';
+					}
+					else if (num_cenario == 0 && delegacia_Esquerda[linha][coluna] == 'D')
+					{
+						delegacia_Esquerda[linha][coluna] = '_';
+					}
+					else if (num_cenario == 2 && delegacia_Direita[linha][coluna] == 'D')
+					{
+						delegacia_Direita[linha][coluna] = '_';
+					}
+				}
+			}
+		}
+
+		// Movimentação do detetive na matriz e cenário (delegacia centro)
+
+		if (cima == true)
+		{
+			if (num_cenario == 1)
+			{
+				if (delegacia_Centro[detetive_Linha - 1][detetive_Coluna] == '_')
+				{
+					detetive_Rect.y -= 8;
+					detetive_Rect_Hitbox.y -= 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			else if (num_cenario == 0)
+			{
+				if (delegacia_Esquerda[detetive_Linha - 1][detetive_Coluna] == '_')
+				{
+					detetive_Rect.y -= 8;
+					detetive_Rect_Hitbox.y -= 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			else if (num_cenario == 2)
+			{
+				if (delegacia_Direita[detetive_Linha - 1][detetive_Coluna] == '_')
+				{
+					detetive_Rect.y -= 8;
+					detetive_Rect_Hitbox.y -= 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			
+		}
+		else if (esq == true)
+		{
+			if (num_cenario == 1)
+			{
+				if (delegacia_Centro[detetive_Linha][detetive_Coluna - 1] == '_')
+				{
+					detetive_Rect.x -= 8;
+					detetive_Rect_Hitbox.x -= 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			else if (num_cenario == 0)
+			{
+				if (delegacia_Esquerda[detetive_Linha][detetive_Coluna - 1] == '_')
+				{
+					detetive_Rect.x -= 8;
+					detetive_Rect_Hitbox.x -= 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			else if (num_cenario == 2)
+			{
+				if (delegacia_Direita[detetive_Linha][detetive_Coluna - 1] == '_')
+				{
+					detetive_Rect.x -= 8;
+					detetive_Rect_Hitbox.x -= 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			
+		}
+		else if (baixo == true)
+		{
+			if (num_cenario == 1)
+			{
+				if (delegacia_Centro[detetive_Linha + 1][detetive_Coluna] == '_')
+				{
+					detetive_Rect.y += 8;
+					detetive_Rect_Hitbox.y += 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			else if (num_cenario == 0)
+			{
+				if (delegacia_Esquerda[detetive_Linha + 1][detetive_Coluna] == '_')
+				{
+					detetive_Rect.y += 8;
+					detetive_Rect_Hitbox.y += 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			else if (num_cenario == 2)
+			{
+				if (delegacia_Direita[detetive_Linha + 1][detetive_Coluna] == '_')
+				{
+					detetive_Rect.y += 8;
+					detetive_Rect_Hitbox.y += 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+		}
+		else if (dir == true)
+		{
+			if (num_cenario == 1)
+			{
+				if (delegacia_Centro[detetive_Linha][detetive_Coluna + 1] == '_')
+				{
+					detetive_Rect.x += 8;
+					detetive_Rect_Hitbox.x += 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			else if (num_cenario == 0)
+			{
+				if (delegacia_Esquerda[detetive_Linha][detetive_Coluna + 1] == '_')
+				{
+					detetive_Rect.x += 8;
+					detetive_Rect_Hitbox.x += 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+			else if (num_cenario == 2)
+			{
+				if (delegacia_Direita[detetive_Linha][detetive_Coluna + 1] == '_')
+				{
+					detetive_Rect.x += 8;
+					detetive_Rect_Hitbox.x += 8;
+
+					delegacia_Centro[detetive_Linha][detetive_Coluna] = '_';
+				}
+			}
+		}
+
+		// Checa em que sala o detetive está e, em seguida, as suas coordenadas
+		if (num_cenario == 1) // centro da delegacia
+		{
+			// Se o detetive estivar nessas coordenadas do mapa ele passa pra sala da esquerda delegacia
+			if (detetive_Linha == 4 && detetive_Coluna == 0)
+			{
+				num_cenario = 0;
+
+				detetive_Linha = 4;
+				detetive_Coluna = 13;
+
+				detetive_Rect.x = grid[4][13].x -16;
+				detetive_Rect.y = grid[4][13].y -16;
+
+				detetive_Rect_Hitbox.x = grid[4][13].x - 16 + detetive_Rect.w / 2;
+				detetive_Rect_Hitbox.y = grid[4][13].y - 16 + detetive_Rect.h / 2;
+			}
+			// Se o detetive estiver nessas coordenadas do mapa ele passa pra sala da direita da delegacia
+			else if(detetive_Linha == 4 && detetive_Coluna == 14)
+			{
+				num_cenario = 2;
+
+				detetive_Linha = 4;
+				detetive_Coluna = 1;
+
+				detetive_Rect.x = grid[4][1].x -16;
+				detetive_Rect.y = grid[4][1].y -16;
+
+				detetive_Rect_Hitbox.x = grid[4][1].x - 16 + detetive_Rect.w / 2;
+				detetive_Rect_Hitbox.y = grid[4][1].y - 16 + detetive_Rect.h / 2;
+			}
+			else if (detetive_Linha == 11 && detetive_Coluna == 7)
+			{
+				SDL_RenderSetViewport(window_Renderer, main_Rect);
+
+				escolha_cenarios(window_Renderer, window_Surface, dificuldade, som_Ligado);
+
+				coloca_fundo_preto(window_Renderer);
+
+				SDL_RenderSetViewport(window_Renderer, &cenario_Rect);
+
+				// ---- //
+
+				cima = false; esq = false; baixo = false; dir = false; // Apenas para prevenir um bug
+
+				// ---- //
+
+				detetive_Linha = 10;
+				detetive_Coluna = 7;
+
+				detetive_Rect.x = grid[10][7].x - 16;
+				detetive_Rect.y = grid[10][7].y - 16;
+
+				detetive_Rect_Hitbox.x = grid[10][7].x - 16 + detetive_Rect.w / 2;
+				detetive_Rect_Hitbox.y = grid[10][7].y - 16 + detetive_Rect.h / 2;
+			}
+		}
+		else if (num_cenario == 0) // esquerda da delegacia
+		{
+			// Se o detetive estiver nessas coordenadas do mapa ele passa para a sala do centro da delegacia
+			if (detetive_Linha == 4 && detetive_Coluna == 14)
+			{
+				num_cenario = 1;
+
+				detetive_Linha = 4;
+				detetive_Coluna = 1;
+
+				detetive_Rect.x = grid[4][1].x -16;
+				detetive_Rect.y = grid[4][1].y -16;
+
+				detetive_Rect_Hitbox.x = grid[4][1].x - 16 + detetive_Rect.w / 2;
+				detetive_Rect_Hitbox.y = grid[4][1].y - 16 + detetive_Rect.h / 2;
+			}
+		}
+		else if (num_cenario == 2) // direita da delegacia
+		{
+			// Se o detetive estivar nessas coordenadas do mapa ele passa pra sala do centro da delegacia
+			if (detetive_Linha == 4 && detetive_Coluna == 0)
+			{
+				num_cenario = 1;
+
+				detetive_Linha = 4;
+				detetive_Coluna = 13;
+
+				detetive_Rect.x = grid[4][13].x -16;
+				detetive_Rect.y = grid[4][13].y -16;
+
+				detetive_Rect_Hitbox.x = grid[4][13].x - 16 + detetive_Rect.w / 2;
+				detetive_Rect_Hitbox.y = grid[4][13].y - 16 + detetive_Rect.h / 2;
+			}
+		}
+
+		// SDL copy das texturas do cenário
+
+		if (num_cenario == 1)
+		{
+			SDL_RenderCopy(window_Renderer, background_Texture_Centro, NULL, NULL);
+		}
+		else if (num_cenario == 0)
+		{
+			SDL_RenderCopy(window_Renderer, background_Texture_Esquerda, NULL, NULL);
+		}
+		else if (num_cenario == 2)
+		{
+			SDL_RenderCopy(window_Renderer, background_Texture_Direita, NULL, NULL);
+		}
+
+
+		// SDL copy das texturas do detetive
+
+		if (cima)
+		{
+			switch (frame_Detetive)
+			{
+			case 0:
+				SDL_RenderCopy(window_Renderer, detetive_Costa_1_Texture, NULL, &detetive_Rect);
+				break;
+			case 1:
+				SDL_RenderCopy(window_Renderer, detetive_Costa_2_Texture, NULL, &detetive_Rect);
+				break;
+			case 2:
+				SDL_RenderCopy(window_Renderer, detetive_Costa_3_Texture, NULL, &detetive_Rect);
+				break;
+			}
+		}
+		else if (esq)
+		{
+			switch (frame_Detetive)
+			{
+			case 0:
+				SDL_RenderCopy(window_Renderer, detetive_Lado_Esquerdo_1_Texture, NULL, &detetive_Rect);
+				break;
+			case 1:
+				SDL_RenderCopy(window_Renderer, detetive_Lado_Esquerdo_2_Texture, NULL, &detetive_Rect);
+				break;
+			case 2:
+				SDL_RenderCopy(window_Renderer, detetive_Lado_Esquerdo_3_Texture, NULL, &detetive_Rect);
+				break;
+			}
+		}
+		else if (baixo)
+		{
+			switch (frame_Detetive)
+			{
+			case 0:
+				SDL_RenderCopy(window_Renderer, detetive_Frente_1_Texture, NULL, &detetive_Rect);
+				break;
+			case 1:
+				SDL_RenderCopy(window_Renderer, detetive_Frente_2_Texture, NULL, &detetive_Rect);
+				break;
+			case 2:
+				SDL_RenderCopy(window_Renderer, detetive_Frente_3_Texture, NULL, &detetive_Rect);
+				break;
+			}
+		}
+		else if (dir)
+		{
+			switch (frame_Detetive)
+			{
+			case 0:
+				SDL_RenderCopy(window_Renderer, detetive_Lado_Direito_1_Texture, NULL, &detetive_Rect);
+				break;
+			case 1:
+				SDL_RenderCopy(window_Renderer, detetive_Lado_Direito_2_Texture, NULL, &detetive_Rect);
+				break;
+			case 2:
+				SDL_RenderCopy(window_Renderer, detetive_Lado_Direito_3_Texture, NULL, &detetive_Rect);
+				break;
+			}
+		}
+		else
+		{
+			if (detetive_Lado == 1)
+			{
+				SDL_RenderCopy(window_Renderer, detetive_Costa_1_Texture, NULL, &detetive_Rect);
+			}
+			else if (detetive_Lado == 2)
+			{
+				SDL_RenderCopy(window_Renderer, detetive_Lado_Esquerdo_2_Texture, NULL, &detetive_Rect);
+			}
+			else if (detetive_Lado == 3)
+			{
+				SDL_RenderCopy(window_Renderer, detetive_Frente_1_Texture, NULL, &detetive_Rect);
+			}
+			else if (detetive_Lado == 4)
+			{
+				SDL_RenderCopy(window_Renderer, detetive_Lado_Direito_2_Texture, NULL, &detetive_Rect);
+			}
+		}
+
+		// ------------- //
+
+		frame_Detetive += 1;
+
+		if (frame_Detetive == 3)
+		{
+			frame_Detetive = 0;
+		}
+
+		// ------------- //
+
+		if (num_cenario == 1)
+		{
+			SDL_RenderCopy(window_Renderer, planta_Texture, NULL, &planta_Direita_Rect);
+			SDL_RenderCopy(window_Renderer, planta_Texture, NULL, &planta_Esquerda_Rect);
+			SDL_RenderCopy(window_Renderer, lixeira_Texture, NULL, &lixeira_Rect);
+		}
+		else if (num_cenario == 0)
+		{
+			SDL_RenderCopy(window_Renderer, bancadas_Texture, NULL, NULL);
+		}
+
+		// ------------- //
+
+		SDL_Delay(50); // Fim da logica do loop
+
+		// ------------- //
+
+		// Mostra o mapa da delegacia
+		
+		
+		for (int linha = 0; linha < 12; linha++)
+		{
+			for (int coluna = 0; coluna < 15; coluna++)
+			{
+				if (num_cenario == 1)
+				{
+					printf("%c ", delegacia_Centro[linha][coluna]);
+				}
+				else if (num_cenario == 0)
+				{
+					printf("%c ", delegacia_Esquerda[linha][coluna]);
+				}
+				else if (num_cenario == 2)
+				{
+					printf("%c ", delegacia_Direita[linha][coluna]);
+				}
+			}
+			printf("\n");
+		}
+
+
+	} // fim do while(cenario)
+
+	// Finalização da função
+
+	SDL_DestroyTexture(background_Texture_Centro);
+	SDL_DestroyTexture(background_Texture_Direita);
+	SDL_DestroyTexture(background_Texture_Esquerda);
+
+	SDL_DestroyTexture(detetive_Costa_1_Texture);
+	SDL_DestroyTexture(detetive_Costa_2_Texture);
+	SDL_DestroyTexture(detetive_Costa_3_Texture);
+	SDL_DestroyTexture(detetive_Frente_1_Texture);
+	SDL_DestroyTexture(detetive_Frente_2_Texture);
+	SDL_DestroyTexture(detetive_Frente_3_Texture);
+	SDL_DestroyTexture(detetive_Lado_Direito_1_Texture);
+	SDL_DestroyTexture(detetive_Lado_Direito_2_Texture);
+	SDL_DestroyTexture(detetive_Lado_Direito_3_Texture);
+	SDL_DestroyTexture(detetive_Lado_Esquerdo_1_Texture);
+	SDL_DestroyTexture(detetive_Lado_Esquerdo_2_Texture);
+	SDL_DestroyTexture(detetive_Lado_Esquerdo_3_Texture);
+
+	SDL_DestroyTexture(planta_Texture);
+	SDL_DestroyTexture(lixeira_Texture);
+	SDL_DestroyTexture(bancadas_Texture);
+
+	background_Texture_Centro = NULL;
+	background_Texture_Direita = NULL;
+	background_Texture_Esquerda = NULL;
+
+	detetive_Costa_1_Texture = NULL;
+	detetive_Costa_2_Texture = NULL;
+	detetive_Costa_3_Texture = NULL;
+	detetive_Frente_1_Texture = NULL;
+	detetive_Frente_2_Texture = NULL;
+	detetive_Frente_3_Texture = NULL;
+	detetive_Lado_Direito_1_Texture = NULL;
+	detetive_Lado_Direito_2_Texture = NULL;
+	detetive_Lado_Direito_3_Texture = NULL;
+	detetive_Lado_Esquerdo_1_Texture = NULL;
+	detetive_Lado_Esquerdo_2_Texture = NULL;
+	detetive_Lado_Esquerdo_3_Texture = NULL;
+
+	planta_Texture = NULL;
+	lixeira_Texture = NULL;
+	bancadas_Texture = NULL;
+
+} // Fim da função cenario_delegacia()
+
+void cenario_1(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, SDL_Rect* main_Rect, bool som_Ligado)
+{
+	coloca_fundo_preto(window_Renderer);
+
+	//int cenario_Width = 320;  //20x16
+	//int cenario_Height = 240; //15x16
+
+	int cenario_Width = 0;  //??x16
+	int cenario_Height = 0; //??x16
+	int amplificador = 3;
+	int lado = 16;
+
+	SDL_Rect cenario_Rect;
+	cenario_Rect.x = 1280 / 2 - cenario_Width / 2 * amplificador;
+	cenario_Rect.y = 720 / 2 - cenario_Height / 2 * amplificador;
+	cenario_Rect.w = cenario_Width * amplificador;
+	cenario_Rect.h = cenario_Height * amplificador;
+
+	SDL_RenderSetViewport(window_Renderer, &cenario_Rect);
+
+	// ------------------------------- //
+
 	SDL_Texture* background_Texture_1 = load_texture("imagens\casa 1 quarto 1.png", window_Renderer);
 	
 	SDL_Texture* background_texture_2 = load_texture("imagens\casa 1 quarto 2.png", window_Renderer);
 
-	SDL_Texture* background_texture_3 = load_texture("imagens\casa 1 quarto 3.png", window_Renderer);
 
 	// ------------------------------- //
 
-	SDL_Texture* detetive_Texture = load_texture("imagens\ sprites do detetive.png", window_Renderer);
+	SDL_Texture* detetive_Texture = load_texture("imagens\sprites do detetive.png", window_Renderer);
 
 	SDL_Rect detetive_Rect;
 
 	SDL_Rect detetive_Clip;
+	detetive_Clip.x = 0;
+	detetive_Clip.y = 32;
+	detetive_Clip.h = 32;
+	detetive_Clip.w = 32;
+
+	int quarto_1[15][20] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+							1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+							1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 
 	// ------------------------------- //
-
-	int cenario_Width = 10*16;
-	int cenario_Height = 10*16;
 	
 	int num_cenario = 1;
 
@@ -1454,7 +2308,16 @@ void cenario_1(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool*
 			{
 				switch (event.key.keysym.sym)
 				{
-				case SDLK_DOWN:
+				case SDLK_w:
+					break;
+
+				case SDLK_a:
+					break;
+				
+				case SDLK_s:
+					break;
+				
+				case SDLK_d:
 					break;
 				}
 			} // Fim do switch das teclas
@@ -1468,10 +2331,6 @@ void cenario_1(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool*
 		{
 			SDL_RenderCopy(window_Renderer, background_texture_2, NULL, NULL);
 		}
-		else if (num_cenario == 3)
-		{
-			SDL_RenderCopy(window_Renderer, background_texture_3, NULL, NULL);
-		}
 		
 
 	} // Fim do while(cenario)
@@ -1480,14 +2339,26 @@ void cenario_1(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool*
 
 	SDL_DestroyTexture(background_Texture_1);
 	SDL_DestroyTexture(background_texture_2);
-	SDL_DestroyTexture(background_texture_3);
 
 	background_Texture_1 = NULL;
 	background_texture_2 = NULL;
-	background_texture_3 = NULL;
 
-} // Fim da função meu_cenario()
+} // Fim da função cenario_1()
 
+void cenario_2(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, SDL_Rect* main_Rect, bool som_Ligado)
+{
+
+}
+
+void cenario_3(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, SDL_Rect* main_Rect, bool som_Ligado)
+{
+
+}
+
+void cenario_4(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, SDL_Rect* main_Rect, bool som_Ligado)
+{
+
+}
 
 // --------------------------------------------------------------------------------------- //
 
@@ -1535,7 +2406,7 @@ int main(int argc, char* argv[])
 		inicio_jornal(window_Renderer, main_Surface);
 	}
 	
-	escolha_cenarios(window_Renderer, main_Surface, &dificuldade, &som_Ligado);
+	cenario_delegacia(window_Renderer, main_Surface, &main_Rect, load_game, dificuldade, som_Ligado);
 	
 
 	// ------------------------------- //
