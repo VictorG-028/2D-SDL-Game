@@ -108,24 +108,36 @@ void coloca_fundo_preto(SDL_Renderer* window_Renderer)
 }
 
 // Função que salva o jogo
-void save_game(int cenarios_Completos, int dificuldade)
+void save_game(int cenarios_Completos, int dificuldade, bool som_Ligado)
 {
 	FILE* arquivo = fopen("imagens/save.txt", "w");
 
-	fprintf(arquivo,"%i %i", cenarios_Completos, dificuldade);
+	fprintf(arquivo,"%i %i %i", cenarios_Completos, dificuldade, som_Ligado);
 
 	fclose(arquivo);
 }
 
 
 // Função que da load no jogo
-void carregar_jogo(int* cenarios_Completos, int* dificuldade)
+void carregar_jogo(int* cenarios_Completos, int* dificuldade, bool* som_Ligado)
 {
 	FILE* arquivo = fopen("imagens/save.txt", "r");
 
-	fscanf(arquivo, "%i %i", cenarios_Completos, dificuldade);
+	const int som = (int)(*som_Ligado);
 
-	printf("%i", *cenarios_Completos);
+	fscanf(arquivo, "%i %i %i", cenarios_Completos, dificuldade, &som );
+
+	if (som)
+	{
+		*som_Ligado = true;
+	}
+	else
+	{
+		*som_Ligado = false;
+	}
+
+	printf("cenarios completos = %i \n", *cenarios_Completos);
+	printf("som ligado = %i \n", *som_Ligado);
 
 	fclose(arquivo);
 }
@@ -3435,8 +3447,6 @@ bool mini_game(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool*
 	const int SCREEN_WIDTH = 1280;
 	const int SCREEN_HEIGHT = 720;
 
-	SDL_Texture* gTexture = NULL;
-
 	SDL_Texture* detetive_Costa_Texture = NULL;
 
 	SDL_Texture* detetive_Lado_Esquerdo_1_Texture = NULL;
@@ -3459,6 +3469,7 @@ bool mini_game(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool*
 	SDL_Texture* projetil = NULL;
 
 
+	SDL_Texture* background_Texture = load_texture("imagens/background.png", window_Renderer);
 	detetive_Costa_Texture = load_texture("imagens/detetive costa 1.png", window_Renderer);
 
 	detetive_Lado_Direito_1_Texture = load_texture("imagens/detetive lado dir 1.png", window_Renderer);
@@ -3795,7 +3806,7 @@ bool mini_game(SDL_Renderer* window_Renderer, SDL_Surface* window_Surface, bool*
 		SDL_RenderClear(window_Renderer);
 
 		//renderiza a textura na tela
-		SDL_RenderCopy(window_Renderer, gTexture, NULL, NULL);
+		SDL_RenderCopy(window_Renderer, background_Texture, NULL, NULL);
 
 
 		if (esq)
@@ -4518,7 +4529,7 @@ void cenario_delegacia(SDL_Renderer* window_Renderer, SDL_Surface* window_Surfac
 
 				case SDLK_x:
 					printf("cenarios completos = %i \n", *cenarios_Completos);
-					save_game(*cenarios_Completos, dificuldade);
+					save_game(*cenarios_Completos, dificuldade, som_Ligado);
 					break;
 
 				case SDLK_1:
@@ -4790,6 +4801,8 @@ void cenario_delegacia(SDL_Renderer* window_Renderer, SDL_Surface* window_Surfac
 			{
 				SDL_RenderSetViewport(window_Renderer, main_Rect);
 
+				Mix_HaltMusic(); // Para a música da delegacia para que nao tenha um ruido quando a musica retornar a tocar
+
 				escolha_cenarios(window_Renderer, window_Surface, main_Rect, dificuldade, som_Ligado, cenarios_Completos, vivo);
 
 				coloca_fundo_preto(window_Renderer);
@@ -4810,6 +4823,12 @@ void cenario_delegacia(SDL_Renderer* window_Renderer, SDL_Surface* window_Surfac
 
 				detetive_Rect_Hitbox.x = grid[10][7].x - 16 + detetive_Rect.w / 2;
 				detetive_Rect_Hitbox.y = grid[10][7].y - 16 + detetive_Rect.h / 2;
+
+				if (som_Ligado)
+				{
+					// SDL_Delay(50);
+					Mix_PlayMusic(musica_jogo, -1);
+				}
 			}
 		}
 		else if (num_cenario == 0) // esquerda da delegacia
@@ -5183,11 +5202,11 @@ int main(int argc, char* argv[])
 
 	if (load_game)
 	{
-		carregar_jogo(&cenarios_Completos, &dificuldade);
+		carregar_jogo(&cenarios_Completos, &dificuldade, &som_Ligado);
 	}
 	else
 	{
-		save_game(cenarios_Completos, dificuldade);
+		save_game(cenarios_Completos, dificuldade, som_Ligado);
 
 		escolher_dificuldade(window_Renderer, main_Surface, &dificuldade);
 		
