@@ -1,6 +1,9 @@
 # Jogo-de-IP1 ![Detetive](https://github.com/VictorG-028/Jogo-de-IP1/blob/Organizando-o-projeto/Recursos/Imagens/detetive%20frente%201.png?raw=true)
 Projeto da disciplina de Introdução a programação I.
 
+Gameplay do jogo: https://youtu.be/JFFWnDHYeEk
+---
+
 ---
 
 - Linguagem do jogo: C
