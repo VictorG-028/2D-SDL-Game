@@ -1,5 +1,8 @@
-# Jogo-de-IP1
+# Jogo-de-IP1 ![Detetive](https://github.com/VictorG-028/Jogo-de-IP1/blob/Organizando-o-projeto/Recursos/Imagens/detetive%20frente%201.png?raw=true)
 Projeto da disciplina de Introdução a programação I.
+
+Gameplay do jogo: https://youtu.be/JFFWnDHYeEk
+---
 
 ---
 
@@ -19,3 +22,7 @@ Link dos requisitos do jogo: https://github.com/VictorG-028/Jogo-de-IP1/issues/2
     - SDL_image.h -> https://www.libsdl.org/projects/SDL_image/
     - SDL_ttf.h -> https://www.libsdl.org/projects/SDL_ttf/
     - SDL_mixer.h -> https://www.libsdl.org/projects/SDL_mixer/
+
+---
+
+![Delegacia](https://github.com/VictorG-028/Jogo-de-IP1/blob/Organizando-o-projeto/Recursos/Imagens/delegacia%20centro.png?raw=true)
